@@ -1,5 +1,3 @@
-SamsPyTools:
-
 Txtrevise
 Command line text editing tool
 Copyright (c) 2009 Sam Saint-Pettersen

@@ -15,7 +15,7 @@ version = 1.0 # Application version
 def main():
     """
     Main method
-	@return 0 exit code for application
+    @return 0 exit code for application
     """
     # Count arguments provided, if none;
     # display "Not arguments.." message and usage
@@ -105,25 +105,25 @@ def matchReplace(line, lineNo, match, repl):
     return newLine
 
 def displayUsage():
-	"""
-	Display usage information
-	"""
-	print("\nTxtrevise v {0}".format(version))
-	print("Command line text editing tool")
-	print("Copyright (c) 2009 Sam Saint-Pettersen")
-	print("\nReleased under the MIT License")
-	print("\nUsage: txtrevise [-h] -f <file> -l <line #> -m <word(s)>")
-	print("\t-r <word(s)>")
-	print("\n\t-f: File to edit")
-	print("\t-l: Line number to edit text on (starts at 1)")
-	print("\t-m: Word(s) to match")
-	print("\t-r: Replacement word(s) for matched word(s)")
-	print("\t-h: This help information")
+    """
+    Display usage information
+    """
+    print("\nTxtrevise v {0}".format(version))
+    print("Command line text editing tool")
+    print("Copyright (c) 2009 Sam Saint-Pettersen")
+    print("\nReleased under the MIT License")
+    print("\nUsage: txtrevise [-h] -f <file> -l <line #> -m <word(s)>")
+    print("\t-r <word(s)>")
+    print("\n\t-f: File to edit")
+    print("\t-l: Line number to edit text on (starts at 1)")
+    print("\t-m: Word(s) to match")
+    print("\t-r: Replacement word(s) for matched word(s)")
+    print("\t-h: This help information")
 
 def displayError(err):
     """
     Display an error message and usage instructions
-    @param err Error to display as an error message string
+    @param err Error to display in error messageg
     """
     print("\nError: {0}.".format(err))
     displayUsage()
