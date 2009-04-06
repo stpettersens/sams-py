@@ -123,7 +123,7 @@ def displayUsage():
 def displayError(err):
     """
     Display an error message and usage instructions
-    @param err Error to display in error messageg
+    @param err Error to display in error message
     """
     print("\nError: {0}.".format(err))
     displayUsage()
