@@ -24,7 +24,7 @@ def main():
 
     # Process provided arguments
     filename = match = repl = "(none)"
-    lineNo = 0
+    lineNo = 1
     try:      
         # -h -f <filename> -l <line #> -m <word(s)> -r <word(s)>
         switches, args = getopt.getopt(sys.argv[1:], "hvf:l:m:r:")
@@ -82,7 +82,6 @@ def processFile(filename, lineNo, match, repl):
     except IOError:
         displayError("Invalid filename or permissions")
         
-
 def matchReplace(line, lineNo, match, repl):
     """
     Match and replace word(s)
