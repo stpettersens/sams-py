@@ -18,7 +18,7 @@ def main():
     @return 0 exit code for application
     """
     # Count arguments provided, if none;
-    # display "Not arguments.." message and usage
+    # display "No arguments.." message and usage
     if len(sys.argv) < 2:
         displayError("No arguments specified")
 
