@@ -6,13 +6,17 @@ Copyright (c) 2009 Sam Saint-Pettersen
 
 Released under the MIT License
 
-Targeting .NET Framework (IronPython)
+Modified original for compatibility
+with .NET (IronPython)
+
+For now uses Rodger Aiken's LGPL
+licensed GetOpt for .NET instead of
+getopt module which for some reason does not work
 """
 import sys
-import getopt
 import re
 
-version = 1.0 # Application version
+version = '1.0' # Application version
 
 def main():
     """
@@ -29,15 +33,15 @@ def main():
     lineNo = 1
     try:      
         # -h -f <filename> -l <line #> -m <word(s)> -r <word(s)>
-        switches, args = getopt.getopt(sys.argv[1:], "hvf:l:m:r:")
+        #switches = GetOpt.GetOptions(sys.argv[1:], "hvf:l:m:r:")
 
         # When args are valid, perform appropriate action
-        for s, a in switches:
-            if s == "-h": displayUsage() # With switch "-h", display usage
-            if s == "-f": filename = a # With switch "-f", specify filename
-            if s == "-l": lineNo = int(a) # With switch "-l", specify line no.
-            if s == "-m": match = a # With switch, "-m", specify match word(s)
-            if s == "-r": repl = a # With switch, "-r", specify replacement
+        #for s, a in switches:
+            #if s == "-h": displayUsage() # With switch "-h", display usage
+            #if s == "-f": filename = a # With switch "-f", specify filename
+            #if s == "-l": lineNo = int(a) # With switch "-l", specify line no.
+            #if s == "-m": match = a # With switch, "-m", specify match word(s)
+            #if s == "-r": repl = a # With switch, "-r", specify replacement
 
         # With necessary arguments, read in file
         if len(sys.argv) > 2:
@@ -94,13 +98,13 @@ def matchReplace(line, lineNo, match, repl):
     """
     # If word(s) are matched, return edited line with replacement word(s)
     if re.search(match, line):    
-        print("\nMatched at Line {0}: {1}".format(lineNo, line))
+        print("\nMatched at Line %d: %s" % lineNo,line)
         newLine = re.sub(match, repl, line)
-        print("Replaced with:\t {0}".format(newLine))
+        print("Replaced with:\t %s" % newLine)
 
     # Otherwise, return same line as before
     else:
-        print("\nNo matches at Line {0}.".format(lineNo))
+        print("\nNo matches at Line %d." % lineNo)
         newLine = line
 
     return newLine
@@ -109,7 +113,7 @@ def displayUsage():
     """
     Display usage information
     """
-    print("\nTxtrevise v {0}".format(version))
+    print("\nTxtrevise v %s" % version)
     print("Command line text editing tool")
     print("Copyright (c) 2009 Sam Saint-Pettersen")
     print("\nReleased under the MIT License")
@@ -126,8 +130,8 @@ def displayError(err):
     Display an error message and usage instructions
     @param err Error to display in error message
     """
-    print("\nError: {0}.".format(err))
+    print("\nError: %s." % err)
     displayUsage()
 
 # Invoke main method
-if __name__ == "__main__": sys.exit(main())
+main()

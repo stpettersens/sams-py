@@ -20,6 +20,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CpGetOpt, Version=0.4.3071.38362, Culture=neutral, PublicKeyToken=59697a63fb01c49c">
+      <Name>CpGetOpt</Name>
+      <AssemblyName>CpGetOpt.dll</AssemblyName>
+      <HintPath>..\..\_Resources\CpGetOpt.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
