@@ -1,0 +1,16 @@
+===
+Txtrevise
+Command line text revision tool
+===
+
+Version 1.0:
+=
+Initial release: Python code and Win32 executable.
+
+Version 1.1:
+=
+Reverted to % style string interpolation for compatibility with IronPython which
+did not seem to support "string".format(...).
+Added sys.platform to displayUsage().
+Invoke main() without sys.exit(...) for CLI/.NET compatibility.
+Released as Python code, Win32 and CLI/.NET executables.

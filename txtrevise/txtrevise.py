@@ -129,5 +129,4 @@ def displayError(err):
     displayUsage()
 
 # Invoke main method
-#if __name__ == "__main__": sys.exit(main())
-main()
+if __name__ == "__main__": main()
