@@ -1,0 +1,44 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{d5a11545-c7d4-4edd-bc94-5112bce754da}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>txtrevise</RootNamespace>
+    <AssemblyName>txtrevise</AssemblyName>
+    <MainFile>txtrevise.py</MainFile>
+    <Name>txtrevise</Name>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Release\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="IronPython">
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="txtrevise.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CHANGELOG.txt">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="COPYING.txt">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\IronPython Studio\1.0\IronPython.targets" />
+</Project>
