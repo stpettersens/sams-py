@@ -1,7 +1,7 @@
 """
 Txtrevise
 Command line text editing tool
-Version 1.0
+Version 1.1
 Copyright (c) 2009 Sam Saint-Pettersen
 
 Released under the MIT License
@@ -10,7 +10,7 @@ import sys
 import getopt
 import re
 
-version = 1.0 # Application version
+version = '1.1' # Application version
 
 def main():
     """
@@ -20,12 +20,13 @@ def main():
     # Count arguments provided, if none;
     # display "No arguments.." message and usage
     if len(sys.argv) < 2:
-        displayError("No arguments specified")
+        displayError("No options specified")
 
     # Process provided arguments
     filename = match = repl = "(none)"
     lineNo = 1
-    try:      
+    try:
+        # Command line structure:
         # -h -f <filename> -l <line #> -m <word(s)> -r <word(s)>
         switches, args = getopt.getopt(sys.argv[1:], "hvf:l:m:r:")
 
@@ -43,8 +44,8 @@ def main():
                 processFile(filename, lineNo, match, repl)
 
     # On exception(s), display an error message and usage
-    except getopt.GetoptError, eMsg:
-        displayError(eMsg)
+    except getopt.GetoptError, ex:
+        displayError(ex)
 
     except ValueError:
         displayError("Line number must be an integer")
@@ -92,13 +93,13 @@ def matchReplace(line, lineNo, match, repl):
     """
     # If word(s) are matched, return edited line with replacement word(s)
     if re.search(match, line):    
-        print("\nMatched at Line {0}: {1}".format(lineNo, line))
+        print("\nMatched at Line %d: %s" % (lineNo, line))
         newLine = re.sub(match, repl, line)
-        print("Replaced with:\t {0}".format(newLine))
+        print("Replaced with:\t %s" % newLine)
 
     # Otherwise, return same line as before
     else:
-        print("\nNo matches at Line {0}.".format(lineNo))
+        print("\nNo matches at Line %d." % lineNo)
         newLine = line
 
     return newLine
@@ -107,7 +108,7 @@ def displayUsage():
     """
     Display usage information
     """
-    print("\nTxtrevise v {0}".format(version))
+    print("\nTxtrevise v %s (%s)" % (version, sys.platform))
     print("Command line text editing tool")
     print("Copyright (c) 2009 Sam Saint-Pettersen")
     print("\nReleased under the MIT License")
@@ -124,9 +125,9 @@ def displayError(err):
     Display an error message and usage instructions
     @param err Error to display in error message
     """
-    print("\nError: {0}.".format(err))
+    print("\nError: %s." % err)
     displayUsage()
 
 # Invoke main method
-if __name__ == "__main__": sys.exit(main())
-
+#if __name__ == "__main__": sys.exit(main())
+main()
