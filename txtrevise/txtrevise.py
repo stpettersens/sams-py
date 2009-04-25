@@ -38,7 +38,7 @@ def main():
             if s == "-m": match = a # With switch, "-m", specify match word(s)
             if s == "-r": repl = a # With switch, "-r", specify replacement
 
-        # With necessary arguments, read in file
+        # With necessary arguments, process file
         if len(sys.argv) > 2:
             if sys.argv[2] == filename:
                 processFile(filename, lineNo, match, repl)
@@ -49,8 +49,6 @@ def main():
 
     except ValueError:
         displayError("Line number must be an integer")
-
-	return 0
 
 def processFile(filename, lineNo, match, repl):
     """
@@ -68,7 +66,7 @@ def processFile(filename, lineNo, match, repl):
         f = open(filename, "r+") # r+: open for reading and writing
         for line in f:
             allLines.append(line)
-            if lineNum == lineNo - 1: # because lines start at 0
+            if lineNum == lineNo - 1: # - 1, because lines start at 0
                 selLine = line
                 index = lineNum
             lineNum += 1
@@ -87,6 +85,7 @@ def matchReplace(line, lineNo, match, repl):
     """
     Match and replace word(s)
     @param line Line with matched word(s) to replace
+    @param lineNo Line number to to do match and replace on
     @param match Word(s) to match
     @param repl Word(s) to replace match(es) with
     @return newLine Edited line
