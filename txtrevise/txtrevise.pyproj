@@ -40,6 +40,9 @@
     <Content Include="COPYING.txt">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Makefile">
+      <SubType>Content</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\IronPython Studio\1.0\IronPython.targets" />
 </Project>
