@@ -7,12 +7,18 @@ Version 1.0:
 =
 * Initial release: Python code and Win32 executable.
 
-Version 1.1:
+Version 1.1 - WIP:
 =
-* Reverted to % style string interpolation for compatibility with IronPython which
-did not seem to support "string".format(...).
+
+==TECHNICAL CHANGES==
+* Reverted to % style string interpolation for compatibility with IronPython which,
+  as of now, does not seem to support "string".format(...).
+
 * Added sys.platform to displayUsage().
 * Invoke main() without sys.exit(...) for CLI/.NET compatibility.
 * Changed to use sys.argv[0] in displayUsage() for program name.
 
-* Released as Python code, Win32 and CLI/.NET executables.
+==FEATURE CHANGES==
+* Added -q (quiet) option to make changes to a file without any console output.
+
+* (Will be) Released as Python code, Win32 and CLI/.NET executables.
