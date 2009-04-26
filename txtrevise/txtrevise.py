@@ -111,7 +111,7 @@ def displayUsage():
     print("Command line text editing tool")
     print("Copyright (c) 2009 Sam Saint-Pettersen")
     print("\nReleased under the MIT License")
-    print("\nUsage: txtrevise [-h] -f <file> -l <line #> -m <word(s)>")
+    print("\nUsage: %s [-h] -f <file> -l <line #> -m <word(s)>" % sys.argv[0])
     print("\t-r <word(s)>")
     print("\n\t-f: File to edit")
     print("\t-l: Line number to edit text on (starts at 1)")
@@ -129,3 +129,4 @@ def displayError(err):
 
 # Invoke main method
 if __name__ == "__main__": main()
+
