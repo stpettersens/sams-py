@@ -133,5 +133,5 @@ def displayError(err):
     displayUsage()
 
 # Invoke main method
-if __name__ == "__main__" or sys.platform == "cli": main()
+if __name__ == "__main__": main()
 
