@@ -122,7 +122,7 @@ def displayUsage():
     print("\t-r: Replacement word(s) for matched word(s)")
     print("\t-q: Quiet mode. Only output to console for errors")
     print("\t-h: This help information")
-    sys.exit()
+    sys.exit(0)
 
 def displayError(err):
     """
@@ -133,5 +133,5 @@ def displayError(err):
     displayUsage()
 
 # Invoke main method
-if __name__ == "__main__": main()
+if __name__ == "__main__" or sys.platform == "cli": main()
 

@@ -15,7 +15,7 @@ Version 1.1 - WIP:
   as of now, does not seem to support "string".format(...).
 
 * Added sys.platform to displayUsage().
-* Invoke main() without sys.exit(...) for CLI/.NET compatibility.
+* Invoke main() with sys.platform == "cli" for CLI/.NET compatibility.
 * Changed to use sys.argv[0] in displayUsage() for program name.
 
 ==FEATURE CHANGES==

@@ -8,6 +8,7 @@
     <AssemblyName>txtrevise</AssemblyName>
     <MainFile>txtrevise.py</MainFile>
     <Name>txtrevise</Name>
+    <TargetPlatform>v2</TargetPlatform>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
