@@ -43,8 +43,8 @@ def main():
 
         # With necessary arguments, process file
         if len(sys.argv) > 2:
-			if filename != "":
-				processFile(filename, lineNo, match, repl)
+            if filename != "":
+                processFile(filename, lineNo, match, repl)
 
     # On exception(s), display an error message and usage
     except getopt.GetoptError, ex:
