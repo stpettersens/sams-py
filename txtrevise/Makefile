@@ -4,7 +4,6 @@
 # Requirements to build:
 # * Python
 # * Py2exe (Win) or Freeze (Unix)
-# * IronPython compiler (.NET)
 # * MSYS (Win)
 # * UPX
 
@@ -14,7 +13,6 @@ INSTALL_DIR_W = /c/dev/bin # Change as desired
 make:
 	@echo
 	@echo make py2exe - build + install py2exe executable
-	@echo make netexe - build + install CLI/.NET executable
 	@echo make freeze - build + install Freeze Unix exectuable
 
 py2exe:
@@ -30,9 +28,6 @@ py2exe:
 	mv dist/${TARGET}.exe ${INSTALL_DIR_W}
 	@echo Done.
 	
-netexe:
-	#TODO
-
 freeze:
 	#TODO
 
