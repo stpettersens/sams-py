@@ -5,20 +5,9 @@ Command line text revision tool
 
 Version 1.0:
 =
+
 * Initial release: Python code and Win32 executable.
 
 Version 1.1 - WIP:
-=
 
-==TECHNICAL CHANGES==
-* Reverted to % style string interpolation for compatibility with IronPython which,
-  as of now, does not seem to support "string".format(...).
-
-* Added sys.platform to displayUsage().
-* Invoke main() with sys.platform == "cli" for CLI/.NET compatibility.
-* Changed to use sys.argv[0] in displayUsage() for program name.
-
-==FEATURE CHANGES==
 * Added -q (quiet) option to make changes to a file without any console output.
-
-* (Will be) Released as Python code, Win32 and CLI/.NET executables.
