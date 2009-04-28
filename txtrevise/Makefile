@@ -8,7 +8,8 @@
 # * UPX
 
 TARGET = txtrevise
-INSTALL_DIR_W = /c/dev/bin # Change as desired
+INSTALL_DIR_U = /usr/bin 
+INSTALL_DIR_W = /c/dev/bin
 
 make:
 	@echo

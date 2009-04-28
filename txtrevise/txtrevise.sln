@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{57B76CF8-F148-40C5-BE9B-5C5EFB1ACA14}") = "txtrevise", "txtrevise.pyproj", "{5549F006-7350-47E9-A27E-343BF876DA2B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5549F006-7350-47E9-A27E-343BF876DA2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5549F006-7350-47E9-A27E-343BF876DA2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5549F006-7350-47E9-A27E-343BF876DA2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5549F006-7350-47E9-A27E-343BF876DA2B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
