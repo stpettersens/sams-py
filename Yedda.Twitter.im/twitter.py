@@ -36,7 +36,7 @@ def image(IDorScreenName):
 	p.Start()
 
 def show(userName, password):
-	print(tw.ShowAsJSON(userName, password, userName))
+	print(t.ShowAsJSON(userName, password, userName))
 
 def each_follower(screenName):
 	followers = t.GetUserFollowersAsXML(screenName)
