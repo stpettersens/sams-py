@@ -1,6 +1,7 @@
 """
 Test Yedda.Twitter assembly in IronPython
 """
+import sys
 import clr
 clr.AddReference("System.Xml")
 clr.AddReference("Yedda.Twitter")
@@ -43,15 +44,15 @@ def each_follower(screenName):
 	ids = followers.GetElementsByTagName("id")
 	i = 0
 	while i < ids.Count:
-		print(ids.Item(i).InnerText)
-		print(t.GetScreenName(ids.Item(i).InnerText))
-		i += 1
+			print(ids.Item(i).InnerText)
+			print(t.GetScreenName(ids.Item(i).InnerText))
+			i += 1
 
 def main():
 	print("\nRun this in IronPython interactive mode.")
-	print("ipy")
+	print("\nipy")
 	print(">>import twitter")
-	print(">>twitter.<command>")
+	print(">>twitter.<method>")
 
 if __name__ == "__main__": main()
 
