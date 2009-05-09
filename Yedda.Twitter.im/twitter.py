@@ -1,5 +1,6 @@
 """
 Test Yedda.Twitter assembly in IronPython
+Please see LEGAL.txt for redistribution information
 """
 import sys
 import clr
