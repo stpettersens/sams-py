@@ -2,7 +2,6 @@
 Test Yedda.Twitter assembly in IronPython
 Please see LEGAL.txt for redistribution information
 """
-import sys
 import clr
 clr.AddReference("System.Xml")
 clr.AddReference("Yedda.Twitter")
@@ -28,6 +27,9 @@ def user_id(screenName):
 def location(IDorScreenName):
 	print(t.GetUserLoc(IDorScreenName))
 
+def time_zone(IDorScreenName):
+	print(t.GetUserTimeZone(IDorScreenName))
+
 def biog(IDorScreenName):
 	print(t.GetUserBiog(IDorScreenName))
 
@@ -45,15 +47,15 @@ def each_follower(screenName):
 	ids = followers.GetElementsByTagName("id")
 	i = 0
 	while i < ids.Count:
-			print(ids.Item(i).InnerText)
-			print(t.GetScreenName(ids.Item(i).InnerText))
-			i += 1
+		print(ids.Item(i).InnerText)
+		print(t.GetScreenName(ids.Item(i).InnerText))
+		i += 1
 
 def main():
 	print("\nRun this in IronPython interactive mode.")
 	print("\nipy")
-	print(">>import twitter")
-	print(">>twitter.<method>")
+	print(">>>import twitter")
+	print(">>>twitter.<method>")
 
 if __name__ == "__main__": main()
 

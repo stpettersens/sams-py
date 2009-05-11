@@ -4,8 +4,8 @@
 // http://devblog.yedda.com/index.php/twitter-c-library/
 //
 // Modified by Sam Saint-Pettersen (s.stpettersen AT gmail.com)
-// Added 7 new methods: GetUserFollowers, GetScreenName, GetRealName, GetUserID,
-// GetUserLoc, GetUserBiog and GetUserImg
+// Added 8 new methods: GetUserFollowers, GetScreenName, GetRealName, GetUserID,
+// GetUserLoc, GetUserTimeZone GetUserBiog and GetUserImg
 //
 // The library is provided on a "AS IS" basis. Yedda is not repsonsible in any way 
 // for whatever usage you do with it.
@@ -641,6 +641,21 @@ namespace Yedda {
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.LoadXml(output);
                 return xmlDocument.GetElementsByTagName("location").Item(0).InnerText;
+            }
+
+            return null;
+        }
+
+        /* 
+            NEW METHOD to get user's time zone
+        */
+        public string GetUserTimeZone(string IDorScreenName) {
+
+            string output = GetUser(IDorScreenName);
+            if (!string.IsNullOrEmpty(output)) {
+                XmlDocument xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(output);
+                return xmlDocument.GetElementsByTagName("time_zone").Item(0).InnerText;
             }
 
             return null;
