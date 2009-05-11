@@ -2,6 +2,7 @@
 # Makefile for txtrevise
 # ===
 # Requirements to build:
+# * Make
 # * Python
 # * Py2exe (Win) or Freeze (Unix)
 # * MSYS (Win)
