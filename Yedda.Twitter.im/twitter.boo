@@ -1,22 +1,19 @@
 """
-Test Yedda.Twitter assembly in IronPython
+Test Yedda.Twitter assembly in Boo
 Please see LEGAL.txt for redistribution information
 """
-import clr
-clr.AddReference("System.Xml")
-clr.AddReference("Yedda.Twitter")
-from System.Xml import *
-from System.Diagnostics import Process
-from Yedda import Twitter
+import System.Xml
+import System.Diagnostics
+import Yedda.Twitter
 
-p = Process()
-t = Twitter()
+p as Process = Process()
+t as Yedda.Twitter = Yedda.Twitter()
+userDetails as XmlDocument = null
 
-def followers(IDorScreenName):
+def followers(IDorScreenName as string):
 	print(t.GetUserFollowersAsJSON(IDorScreenName))
 
-def user_details(IDorScreenName):
-	global userDetails
+def user_details(IDorScreenName as string):
 	userDetails = t.GetUserDetailsAsXML(IDorScreenName)
 
 def real_name():
@@ -38,7 +35,7 @@ def biog():
 	print(t.GetUserBiog(userDetails))
 
 def image():
-	url = t.GetUserImg(userDetails)
+	url as string = t.GetUserImg(userDetails)
 	print(url)
 	p.StartInfo.FileName = url
 	p.Start()
@@ -47,18 +44,16 @@ def show(userName, password):
 	print(t.ShowAsJSON(userName, password, userName))
 
 def each_follower(screenName):
-	followers = t.GetUserFollowersAsXML(screenName)
-	ids = followers.GetElementsByTagName("id")
-	i = 0
+	followers as XmlDocument = t.GetUserFollowersAsXML(screenName)
+	ids as XmlNodeList = followers.GetElementsByTagName("id")
+	i as int = 0
 	while i < ids.Count:
 		print(ids.Item(i).InnerText)
 		i += 1
 
 def main():
-	print("\nRun this in IronPython interactive mode.")
-	print("\nipy")
-	print(">>>import twitter")
-	print(">>>twitter.<method>")
+	print("\nRun this in Boo interactive shell.")
+	print("\nbooish twitter.boo")
+	print(">>><method>")
 
-if __name__ == "__main__": main()
-
+main()

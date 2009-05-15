@@ -4,8 +4,8 @@
 // http://devblog.yedda.com/index.php/twitter-c-library/
 //
 // Modified by Sam Saint-Pettersen (s.stpettersen AT gmail.com)
-// Added 8 new methods: GetUserFollowers, GetScreenName, GetRealName, GetUserID,
-// GetUserLoc, GetUserTimeZone GetUserBiog and GetUserImg
+// Added 9 new methods: GetUserDetails, GetUserFollowers, GetScreenName, GetRealName, 
+// GetUserID, GetUserLoc, GetUserTimeZone, GetUserBiog and GetUserImg
 //
 // The library is provided on a "AS IS" basis. Yedda is not repsonsible in any way 
 // for whatever usage you do with it.
@@ -473,8 +473,7 @@ namespace Yedda {
 
         public XmlDocument GetUserFollowersAsXML(string IDorScreenName) {
             string output = GetUserFollowers(IDorScreenName, OutputFormatType.XML);
-            if (!string.IsNullOrEmpty(output))
-            {
+            if (!string.IsNullOrEmpty(output)) {
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.LoadXml(output);
 
@@ -482,6 +481,11 @@ namespace Yedda {
             }
 
             return null;
+        }
+        
+        public string GetFollowerAtIndex(XmlDocument FollowersListAsXML, int atIndex) {
+
+            return FollowersListAsXML.GetElementsByTagName("id").Item(atIndex).InnerText;
         }
 
         #endregion
@@ -578,117 +582,82 @@ namespace Yedda {
         #region User
 
         /*
-           NEW BASE METHOD to get user from ID or ScreenName
+           NEW METHOD to get user's details from ID or ScreenName
         */
-        protected string GetUser(string IDorScreenName) {
+        public string GetUserDetails(string IDorScreenName, OutputFormatType format) {
 
-            string url = string.Format(TwitterBaseUrlFormat, GetObjectTypeString(ObjectType.Users), GetActionTypeString(ActionType.Show) + "/" + IDorScreenName, GetFormatTypeString(OutputFormatType.XML));
+            string url = string.Format(TwitterBaseUrlFormat, GetObjectTypeString(ObjectType.Users), GetActionTypeString(ActionType.Show) + "/" + IDorScreenName, GetFormatTypeString(format));
             return ExecuteGetCommand(url, "", ""); // Do not authenticate
         }
 
-        /*
-            NEW METHOD to get RealName from ID or ScreenName
+        /* 
+           NEW METHOD to get user's details from ID or SceenName as XML
         */
-        public string GetRealName(string IDorScreenName) {
-
-            string output = GetUser(IDorScreenName);
+        public XmlDocument GetUserDetailsAsXML(string IDorScreenName) {
+            string output = GetUserDetails(IDorScreenName, OutputFormatType.XML);
             if (!string.IsNullOrEmpty(output)) {
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.LoadXml(output);
-                return xmlDocument.GetElementsByTagName("name").Item(0).InnerText;
+                return xmlDocument;
             }
 
             return null;
         }
 
         /*
-            NEW METHOD to get ScreenName from userID
+            NEW METHOD to get RealName from user details
         */
-        public string GetScreenName(string userID) {
+        public string GetRealName(XmlDocument UserDetailsAsXML) {
 
-            string output = GetUser(userID);
-            if (!string.IsNullOrEmpty(output)) {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(output);
-                return xmlDocument.GetElementsByTagName("screen_name").Item(0).InnerText;
-            }
+            return UserDetailsAsXML.GetElementsByTagName("name").Item(0).InnerText;
+        }
 
-            return null;
+        /*
+            NEW METHOD to get ScreenName from user details
+        */
+        public string GetScreenName(XmlDocument UserDetailsAsXML) {
+
+            return UserDetailsAsXML.GetElementsByTagName("screen_name").Item(0).InnerText;
         }
 
         /* 
-            NEW METHOD to get user ID from ScreenName
+            NEW METHOD to get user ID from user details
         */
-        public string GetUserID(string ScreenName) {
+        public string GetUserID(XmlDocument UserDetailsAsXML) {
 
-            string output = GetUser(ScreenName);
-            if (!string.IsNullOrEmpty(output)) {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(output);
-                return xmlDocument.GetElementsByTagName("id").Item(0).InnerText;
-            }
-
-            return null;
+            return UserDetailsAsXML.GetElementsByTagName("id").Item(0).InnerText;
         }
 
         /*
-            NEW METHOD to get user's location
+            NEW METHOD to get user's location from user details
         */
-        public string GetUserLoc(string IDorScreenName) {
+        public string GetUserLoc(XmlDocument UserDetailsAsXML) {
 
-            string output = GetUser(IDorScreenName);
-            if (!string.IsNullOrEmpty(output)) {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(output);
-                return xmlDocument.GetElementsByTagName("location").Item(0).InnerText;
-            }
-
-            return null;
+            return UserDetailsAsXML.GetElementsByTagName("location").Item(0).InnerText;
         }
 
         /* 
-            NEW METHOD to get user's time zone
+            NEW METHOD to get user's time zone from user details
         */
-        public string GetUserTimeZone(string IDorScreenName) {
+        public string GetUserTimeZone(XmlDocument UserDetailsAsXML) {
 
-            string output = GetUser(IDorScreenName);
-            if (!string.IsNullOrEmpty(output)) {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(output);
-                return xmlDocument.GetElementsByTagName("time_zone").Item(0).InnerText;
-            }
-
-            return null;
+            return UserDetailsAsXML.GetElementsByTagName("time_zone").Item(0).InnerText;
         }
 
         /*
-            NEW METHOD to get user's biography
+            NEW METHOD to get user's biography from user details
         */
-        public string GetUserBiog(string IDorScreenName) {
+        public string GetUserBiog(XmlDocument UserDetailsAsXML) {
 
-            string output = GetUser(IDorScreenName);
-            if (!string.IsNullOrEmpty(output)) {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(output);
-                return xmlDocument.GetElementsByTagName("description").Item(0).InnerText;
-            }
-
-            return null;
+            return UserDetailsAsXML.GetElementsByTagName("description").Item(0).InnerText;
         }
 
         /*
-            NEW METHOD to ger user's profile image as string url
+            NEW METHOD to ger user's profile image as string url from user details
         */
-        public string GetUserImg(string IDorScreenName) {
+        public string GetUserImg(XmlDocument UserDetailsAsXML) {
 
-            string output = GetUser(IDorScreenName);
-            if (!string.IsNullOrEmpty(output)) {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(output);
-                return xmlDocument.GetElementsByTagName("profile_image_url").Item(0).InnerText;
-            }
-
-            return null;
+            return UserDetailsAsXML.GetElementsByTagName("profile_image_url").Item(0).InnerText;
         }
 
         #endregion
