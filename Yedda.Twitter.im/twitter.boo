@@ -40,16 +40,20 @@ def image():
 	p.StartInfo.FileName = url
 	p.Start()
 
-def show(userName, password):
+def show(userName as string, password as string):
 	print(t.ShowAsJSON(userName, password, userName))
 
-def each_follower(screenName):
+def each_follower(screenName as string):
 	followers as XmlDocument = t.GetUserFollowersAsXML(screenName)
 	ids as XmlNodeList = followers.GetElementsByTagName("id")
 	i as int = 0
 	while i < ids.Count:
 		print(ids.Item(i).InnerText)
 		i += 1
+
+def update(username as string, password as string, status as string):
+	t.UpdateAsJSON(username, password, status)
+	print("Tweeted: ${status}!")
 
 def main():
 	print("\nRun this in Boo interactive shell.")

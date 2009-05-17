@@ -54,6 +54,10 @@ def each_follower(screenName):
 		print(ids.Item(i).InnerText)
 		i += 1
 
+def update(username, password, status):
+	t.UpdateAsJSON(username, password, status)
+	print("Tweeted: %s!" % status)
+
 def main():
 	print("\nRun this in IronPython interactive mode.")
 	print("\nipy")

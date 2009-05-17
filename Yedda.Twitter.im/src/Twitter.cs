@@ -5,7 +5,10 @@
 //
 // Modified by Sam Saint-Pettersen (s.stpettersen AT gmail.com)
 // Added 9 new methods: GetUserDetails, GetUserFollowers, GetScreenName, GetRealName, 
-// GetUserID, GetUserLoc, GetUserTimeZone, GetUserBiog and GetUserImg
+// GetUserID, GetUserLoc, GetUserTimeZone, GetUserBiog and GetUserIm
+//
+// Also fixed problem with status updates resulting in HTTP error 417,
+// because of bad Expect header. http://is.gd/dvKY
 //
 // The library is provided on a "AS IS" basis. Yedda is not repsonsible in any way 
 // for whatever usage you do with it.
@@ -182,6 +185,7 @@ namespace Yedda {
 		/// <param name="data">The data to post</param> 
 		/// <returns>The response of the request, or null if we got 404 or nothing.</returns>
 		protected string ExecutePostCommand(string url, string userName, string password, string data) {
+            ServicePointManager.Expect100Continue = false; // Fix for HTTP 417 problem
 			WebRequest request = WebRequest.Create(url);
 			if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password)) {
 				request.Credentials = new NetworkCredential(userName, password);
