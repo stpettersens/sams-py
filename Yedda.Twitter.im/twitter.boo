@@ -52,7 +52,7 @@ def each_follower(screenName as string):
 		i += 1
 
 def update(username as string, password as string, status as string):
-	t.UpdateAsJSON(username, password, status)
+	t.UpdateNow(username, password, status)
 	print("Tweeted: ${status}!")
 
 def main():

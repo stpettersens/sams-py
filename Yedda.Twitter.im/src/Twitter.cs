@@ -4,8 +4,8 @@
 // http://devblog.yedda.com/index.php/twitter-c-library/
 //
 // Modified by Sam Saint-Pettersen (s.stpettersen AT gmail.com)
-// Added 9 new methods: GetUserDetails, GetUserFollowers, GetScreenName, GetRealName, 
-// GetUserID, GetUserLoc, GetUserTimeZone, GetUserBiog and GetUserIm
+// Added 10 new methods: UpdateNow, GetUserDetails, GetUserFollowers, GetScreenName,
+// GetRealName, GetUserID, GetUserLoc, GetUserTimeZone, GetUserBiog and GetUserImg
 //
 // Also fixed problem with status updates resulting in HTTP error 417,
 // because of bad Expect header. http://is.gd/dvKY
@@ -185,6 +185,7 @@ namespace Yedda {
 		/// <param name="data">The data to post</param> 
 		/// <returns>The response of the request, or null if we got 404 or nothing.</returns>
 		protected string ExecutePostCommand(string url, string userName, string password, string data) {
+
             ServicePointManager.Expect100Continue = false; // Fix for HTTP 417 problem
 			WebRequest request = WebRequest.Create(url);
 			if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password)) {
@@ -507,12 +508,12 @@ namespace Yedda {
 			return ExecutePostCommand(url, userName, password, data);
 		}
 
-		public string UpdateAsJSON(string userName, string password, string text) {
-			return Update(userName, password, text, OutputFormatType.JSON);
+		public string UpdateAsJSON(string userName, string password, string status) {
+			return Update(userName, password, status, OutputFormatType.JSON);
 		}
 
-		public XmlDocument UpdateAsXML(string userName, string password, string text) {
-			string output = Update(userName, password, text, OutputFormatType.XML);
+		public XmlDocument UpdateAsXML(string userName, string password, string status) {
+			string output = Update(userName, password, status, OutputFormatType.XML);
 			if (!string.IsNullOrEmpty(output)) {
 				XmlDocument xmlDocument = new XmlDocument();
 				xmlDocument.LoadXml(output);
@@ -522,6 +523,13 @@ namespace Yedda {
 
 			return null;
 		}
+
+        /*
+            NEW METHOD to just update status without returning anything
+       */
+        public void UpdateNow(string userName, string password, string status) {
+            Update(userName, password, status, OutputFormatType.JSON);
+        }
 
 		#endregion
 
