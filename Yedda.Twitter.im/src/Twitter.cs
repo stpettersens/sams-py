@@ -6,6 +6,7 @@
 // Modified by Sam Saint-Pettersen (s.stpettersen AT gmail.com)
 // Added 10 new methods: UpdateNow, GetUserDetails, GetUserFollowers, GetScreenName,
 // GetRealName, GetUserID, GetUserLoc, GetUserTimeZone, GetUserBiog and GetUserImg
+// TODO: Write a new library, so many additions / changes
 //
 // Also fixed problem with status updates resulting in HTTP error 417,
 // because of bad Expect header. http://is.gd/dvKY
@@ -430,6 +431,26 @@ namespace Yedda {
 		public XmlDocument GetFriendsAsXML(string userName, string password) {
 			return GetFriendsAsXML(userName, password, null);
 		}
+
+        public string GetUserFriends(string IDorScreenName, OutputFormatType format) {
+
+            string url = string.Format(TwitterBaseUrlFormat, GetActionTypeString(ActionType.Friends) + "/" + GetObjectTypeString(ObjectType.IDs), IDorScreenName, GetFormatTypeString(format));
+            return ExecuteGetCommand(url, null, null);
+
+        }
+
+        public XmlDocument GetUserFriendsAsXML(string IDorScreenName) {
+
+            string output = GetUserFriends(IDorScreenName, OutputFormatType.XML);
+            if (!string.IsNullOrEmpty(output)) {
+                XmlDocument xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(output);
+
+                return xmlDocument;
+            }
+
+            return null;
+        }
 
 		#endregion
 

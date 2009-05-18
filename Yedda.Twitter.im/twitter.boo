@@ -43,9 +43,19 @@ def image():
 def show(userName as string, password as string):
 	print(t.ShowAsJSON(userName, password, userName))
 
-def each_follower(screenName as string):
-	followers as XmlDocument = t.GetUserFollowersAsXML(screenName)
+def each_follower(IDorScreenName as string):
+	followers as XmlDocument = t.GetUserFollowersAsXML(IDorScreenName)
 	ids as XmlNodeList = followers.GetElementsByTagName("id")
+	print("${ids.Count} followers:")
+	i as int = 0
+	while i < ids.Count:
+		print(ids.Item(i).InnerText)
+		i += 1
+
+def each_friend(IDorScreenName as string):
+	friends as XmlDocument = t.GetUserFriendsAsXML(IDorScreenName)
+	ids as XmlNodeList = friends.GetElementsByTagName("id")
+	print("${ids.Count} friends:")
 	i as int = 0
 	while i < ids.Count:
 		print(ids.Item(i).InnerText)
