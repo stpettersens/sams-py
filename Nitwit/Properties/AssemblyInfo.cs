@@ -10,7 +10,7 @@ using System.Resources;
 [assembly: AssemblyDescription("Twitter client library")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Nitwit")]
+[assembly: AssemblyProduct("Twitter client library")]
 [assembly: AssemblyCopyright("Copyright ©  2009 Sam Saint-Pettersen")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
