@@ -17,86 +17,113 @@ using System.Xml;
 namespace Nitwit {
 
     public class Twitter {
+
         #region LibraryDefines
-        // Define Twitter base and API URL format
-        protected const string BaseUrl = @"http://twitter.com";
-        protected const string ApiUrl = @BaseUrl + "/{0}/{1}.{2}";
+
+        // Define Twitter API URL format
+        private const string ApiUrl = @"http://twitter.com/{0}/{1}.{2}";
        
         // Define API groups and methods
-        protected enum ApiGroup : byte {  
+        private enum ApiGroup : byte {  
             // {0} in ApiUrl
             Statuses, Users, Direct_messages, // REST API groups
             Friendships, Friends, Followers, Favorites,
             Accounts, Notifications, Blocks, Help,
             Search, Trends  // Search API groups
         }
-        protected enum ApiMethod : byte {
+
+        private enum ApiMethod : byte {
             // {1} in ApiUrl
             Public_timeline, Friends_timeline, // Timeline methods
             User_timeline, Show, Friends, Followers, // User methods
-            Sent, New, Create, Exists, Destroy, IDs, // "Overloaded" methods
+            Sent, New, Create, Exists, Destroy, IDs, // Common methods
             Follow, Leave, // Notification methods
             Blocking, // Blocks method(s)
             Test // Help method
         }
 
         // Define returned data formats
-        public enum DataFormat : byte { Atom, RSS, XML, JSON } // {2} in ApiUrl
+        public enum DataFormat : byte { JSON, XML, RSS, Atom } // {2} in ApiUrl
+
+        // Special appendings
+        private enum Append : byte { User_a, User_b, Follow } // After {2} in ApiUrl
 
         // Return an ApiGroup as a lowercase string
-        protected string getGroupStr(ApiGroup group) {
+        private string getGroupStr(ApiGroup group) {
             return group.ToString().ToLower();
         }
 
         // Return an ApiMethod as a lowercase string
-        protected string getMethodStr(ApiMethod method) {
+        private string getMethodStr(ApiMethod method) {
             return method.ToString().ToLower();
         }
 
         // Return a DataFormat as a lowercase string
-        protected string getFormatStr(DataFormat format) {
+        private string getFormatStr(DataFormat format) {
             return format.ToString().ToLower();
         }
+
+        // Return an Append as a lowercase string in correct 
+        // appending context
+        private string getAppendStr(Append app) {
+            string sym = null; 
+            if(app == Append.User_a) sym = @"?"; else sym = @"&";
+            return string.Format("{0}{1}{2}", sym,
+            app.ToString().ToLower(), @"=");
+        }
+
+        // Alternative method for returning Append as a string
+        private string getAppendStr(ApiMethod app) {
+            return string.Format(@"?{0}{1}", app.ToString().ToLower(), @"=");
+        }
+
+
         #endregion
 
         #region ClientDefines
         #endregion
 
-        #region LibraryMethods
+        #region Library_methods
+
         /// <summary>
-        /// Execute HTTP GET method w/o authentication
+        /// Execute HTTP GET method w/ or w/o authentication
         /// </summary>
-        /// <param name="url">URL for operation</param>
-        /// <returns>Request response or null</returns>
-        protected string executeHttpGet(string url) {
+        /// <param name="url">URL for response</param>
+        /// <param name="username">Authenticating user's username (optional)</param>
+        /// <param name="password">Authenticating user's password (optional)</param>
+        private string executeHttpGet(string url, string username, string password) {
             WebClient client = new WebClient();
-            try {
-                using (Stream stream = client.OpenRead(url)) {
-                    using(StreamReader reader = new StreamReader(stream)) {
-                        return reader.ReadToEnd();
-                    }
-                }
+            if(!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)) {
+                client.Credentials = new NetworkCredential(username, password);
             }
-            catch(WebException ex) {
-                if (ex.Response is HttpWebResponse) {
+            try
+            {
+                Stream stream = client.OpenRead(url);
+                StreamReader reader = new StreamReader(stream);
+                return reader.ReadToEnd();
+            }
+            catch (WebException ex)
+            {
+                if (ex.Response is HttpWebResponse)
+                {
                     // Return null on HTTP 404 - Not Found
-                    if ((ex.Response as HttpWebResponse).StatusCode == HttpStatusCode.NotFound) {
+                    if ((ex.Response as HttpWebResponse).StatusCode == HttpStatusCode.NotFound)
+                    {
                         return null;
                     }
                 }
                 throw ex;
             }
-
         }
+
         /// <summary>
         /// Execute HTTP POST method w/ user authentication
         /// </summary>
-        /// <param name="url">URL for operation</param>
+        /// <param name="url">URL for request</param>
         /// <param name="username">Authenticating user's username</param>
         /// <param name="password">Authenticating user's password</param>
-        /// <param name="data">Data to post</param>
         /// <returns>Request response or null</returns>
-        protected string executeHttpPost(string url, string username, string password, string data) {
+        private string executeHttpPost(string url, string username, string password) {
             // Do not expect HTTP 100, prevents HTTP 417 problem
             ServicePointManager.Expect100Continue = false;
             WebRequest request = WebRequest.Create(url);
@@ -105,33 +132,65 @@ namespace Nitwit {
             request.Method = "POST";
 
             // ...
-
+            
+            string data = "";
             byte[] bytes = Encoding.UTF8.GetBytes(data); // Use UTF8 encoding
             request.ContentLength = bytes.Length;
-            using(Stream requestStream = request.GetRequestStream()) {
-                requestStream.Write(bytes, 0, bytes.Length);
-                using(WebResponse response = request.GetResponse()) {
-                    using(StreamReader reader = new StreamReader(response.GetResponseStream())) {
+            Stream requestStream = request.GetRequestStream();
+            requestStream.Write(bytes, 0, bytes.Length);
+            WebResponse response = request.GetResponse();
+            using(StreamReader reader = 
+            new StreamReader(response.GetResponseStream())) {
                         return reader.ReadToEnd();
-                    }
-                }
             }
         }
+
         #endregion
 
         #region REST_API_methods
 
-        #region Public_Timeline
+        #region Help_methods
+
         /// <summary>
-        /// Twitter API: Returns the 20 most recent statuses from non-protected users
-        /// who have set a custom user icon.
+        /// Twitter API Doc: Returns the string "ok" in the requested format 
+        /// with a 200 OK HTTP status code.
+        /// NOT AUTHENTICATED, NOT API LIMITED
+        /// "http://apiwiki.twitter.com/Twitter-REST-API-Method:-help test"
+        /// </summary>
+        /// <param name="format">Data format to return response in</param>
+        /// <returns>Reponse in specified data type</returns>
+        public string testMethod(DataFormat format) {
+            if(format == DataFormat.RSS || format == DataFormat.Atom) {
+                throw new ArgumentException("testMethod supports only JSON or XML response.");
+            }
+            string url = string.Format(ApiUrl, getGroupStr(ApiGroup.Help),
+            getMethodStr(ApiMethod.Test), getFormatStr(format));
+            return executeHttpGet(url, null, null);
+        }
+
+        // Convenience methods to return response in a specific data format
+        public string testMethodInJSON() {
+            return testMethod(DataFormat.JSON);
+        }
+
+        public string testMethodInXML() {
+            return testMethod(DataFormat.XML);
+        }
+
+        #endregion
+
+        #region Public_Timeline
+
+        /// <summary>
+        /// Twitter API Doc: Returns the 20 most recent statuses from 
+        /// non-protected users who have set a custom user icon.
         /// </summary>
         /// <param name="format">Data format to return reponse in</param>
         /// <returns>Specified data format</returns>
         public string getPublicTimeline(DataFormat format) {
             string url = string.Format(ApiUrl, getGroupStr(ApiGroup.Statuses), 
             getMethodStr(ApiMethod.Public_timeline), getFormatStr(format));
-            return executeHttpGet(url);
+            return executeHttpGet(url, null, null);
         }
 
         // Convenience methods for getting public timeline in a specific format
@@ -180,10 +239,9 @@ namespace Nitwit {
         /// <param name="statusID">Status ID for Tweet</param>
         /// <returns>Tweet and author inline.</returns>
         public string getStatus(string statusID, DataFormat format) {
-            string url = String.Format
-            (ApiUrl, getGroupStr(ApiGroup.Statuses), getMethodStr(ApiMethod.Show),
-            getFormatStr(format));
-            return executeHttpGet(url);
+            string url = String.Format(ApiUrl, getGroupStr(ApiGroup.Statuses),
+            getMethodStr(ApiMethod.Show), getFormatStr(format));
+            return executeHttpGet(url, null, null);
         }
 
         #endregion
@@ -197,35 +255,38 @@ namespace Nitwit {
         #region Friendship_methods
 
         /// <summary>
-        /// Twitter API Doc: Allows the authenticating users to follow the user 
-        /// specified in the ID parameter.  
-        /// Returns the befriended user in the requested format when successful.
-        /// Returns a string describing the failure condition when unsuccessful.
+        /// Twitter API Doc: Tests for the existance of friendship between two users. 
+        /// Will return true if user_a follows user_b, otherwise 
+        /// will return false.
+        /// Response types: JSON, XML (and raw Boolean via JSON in Nitwit)
+        /// IS API LIMITED, IS AUTHENTICATED
+        /// "http://apiwiki.twitter.com/Twitter-REST-API-Method:-friendships-exists"
         /// </summary>
         /// <param name="username">Authenticating user's username</param>
         /// <param name="password">Authenticating user's password</param>
-        /// <param name="IDorScreenName"></param>
+        /// <param name="userA">First user in comparison</param>
+        /// <param name="userB">Second user in comparison</param>
         /// <param name="format">Data format to return response in</param>
-        /// <returns>Returns reponse is specified data format</returns>
-        public string followUser(string username, string password, string IDorScreenName,
-        DataFormat format) {
-            if(format == DataFormat.Atom || format == DataFormat.RSS) {
-                throw new ArgumentException("followUser only accepts JSON or XML response.");
+        /// <returns>Returns reponse in specified data format</returns>
+        public string areFriends(string username, string password, string userA,
+        string userB, DataFormat format) {
+            if(format == DataFormat.RSS || format == DataFormat.Atom) {
+                throw new ArgumentException("areFriends supports only JSON or XML response.");
             }
-            string url = String.Format(
-            ApiUrl, getGroupStr(ApiGroup.Friendships), getMethodStr(ApiMethod.Create) 
-            + "/" + IDorScreenName, getFormatStr(format));
-            return executeHttpPost(url, username, password, "");
+            string url = string.Format(ApiUrl, getGroupStr(ApiGroup.Friendships),
+            getMethodStr(ApiMethod.Exists), getFormatStr(format) +
+            getAppendStr(Append.User_a) + userA + getAppendStr(Append.User_b) + userB);
+            return executeHttpGet(url, username, password);
         }
 
-        // Convenience methods for getting response in a specific format
-        public string followUserInJSON(string username, string password, string IDorScreenName) {
-            return followUser(username, password, IDorScreenName, DataFormat.JSON);
+        public string areFriendsInJSON(string username, string password, string userA,
+        string userB) {
+            return areFriends(username, password, userA, userB, DataFormat.JSON);
         }
 
-        public XmlDocument followUserInXML(string username, string password, string IDorScreenName)
-        {
-            string output = followUser(username, password, IDorScreenName, DataFormat.XML);
+        public XmlDocument areFriendsInXML(string username, string password, string userA,
+        string userB) {
+            string output = areFriends(username, password, userA, userB, DataFormat.XML);
             if (!string.IsNullOrEmpty(output))
             {
                 XmlDocument response = new XmlDocument();
@@ -235,10 +296,100 @@ namespace Nitwit {
             return null;
         }
 
+        public bool areFriendsInBool(string username, string password, string userA,
+        string userB) {
+            string response = areFriendsInJSON(username, password, userA, userB);
+            if (response == "true") return true;
+            else if (response == "false") return false;
+            else return false; // Assume false on bad response
+        }
+
+        /// <summary>
+        /// Twitter API Doc: Allows the authenticating user to follow the user 
+        /// specified in the ID parameter.  
+        /// Returns the befriended user in the requested format when successful.
+        /// Returns a string describing the failure condition when unsuccessful.
+        /// Response types: JSON, XML 
+        /// NOT API LIMITED, IS AUTHENTICATED
+        /// "http://apiwiki.twitter.com/Twitter-REST-API-Method:-friendships create"
+        /// </summary>
+        /// <param name="username">Authenticating user's username</param>
+        /// <param name="password">Authenticating user's password</param>
+        /// <param name="IDorScreenName">ID or screen name of user to follow</param>
+        /// <param name="notifs">Add followed user's notifications to profile</param>
+        /// <param name="format">Data format to return response in</param>
+        /// <returns>Returns reponse is specified data format</returns>
+        public string addFriend(string username, string password, string IDorScreenName,
+        bool notifs, DataFormat format) {
+            if(format == DataFormat.RSS || format == DataFormat.Atom) {
+                throw new ArgumentException("followUser only accepts JSON or XML response.");
+            }
+            string url = string.Format(ApiUrl, getGroupStr(ApiGroup.Friendships), 
+            getMethodStr(ApiMethod.Create) + "/" + IDorScreenName, getFormatStr(format) + 
+            getAppendStr(ApiMethod.Follow) + notifs.ToString().ToLower());
+            Console.WriteLine("Debug:::" + url);
+            return executeHttpPost(url, username, password);
+        }
+
+        public string addFriendInJSON(string username, string password, string IDorScreenName,
+        bool notifs) {
+            return addFriend(username, password, IDorScreenName, notifs, DataFormat.JSON);
+        }
+
+        public XmlDocument addFriendInXML(string username, string password, string IDorScreenName,
+        bool notifs) {
+            string output = addFriend(username, password, IDorScreenName, notifs, DataFormat.XML);
+            if (!string.IsNullOrEmpty(output))
+            {
+                XmlDocument response = new XmlDocument();
+                response.LoadXml(output);
+                return response;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Twitter API Doc: Allows the authenticating users to unfollow the user specified in 
+        /// the ID parameter. Returns the unfollowed user in the requested format when successful. 
+        /// Returns a string describing the failure condition when unsuccessful.
+        /// Response types: JSON, XML 
+        /// NOT API LIMITED, IS AUTHENTICATED
+        /// "http://apiwiki.twitter.com/Twitter-REST-API-Method:-friendships destroy"
+        /// </summary>
+        /// <param name="username">Authenticating user's username</param>
+        /// <param name="password">Authenticating user's password</param>
+        /// <param name="IDorScreenName">ID or screen name of user to unfollow</param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public string removeFriend(string username, string password, string IDorScreenName,
+        DataFormat format) {
+            if (format == DataFormat.RSS || format == DataFormat.Atom)
+            {
+                throw new ArgumentException("removeFriend only accepts JSON or XML response.");
+            }
+            string url = string.Format(ApiUrl, getGroupStr(ApiGroup.Friendships),
+            getMethodStr(ApiMethod.Destroy), getFormatStr(format));
+            return executeHttpPost(url, username, password);
+        }
+
+        public string removeFriendInJSON(string username, string password, string IDorScreenName) {
+            return removeFriend(username, password, IDorScreenName, DataFormat.JSON);
+        }
+
+        public XmlDocument removeFriendInXML(string username, string password, string IDorScreenName) {
+            string output = removeFriend(username, password, IDorScreenName, DataFormat.XML);
+            if (!string.IsNullOrEmpty(output)) {
+                XmlDocument response = new XmlDocument();
+                response.LoadXml(output);
+                return response;
+            }
+            return null;
+        }
+            
+            
         #endregion
 
         #endregion
-
 
     }
 }

@@ -6,11 +6,11 @@ using System.Resources;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Nitwit")]
-[assembly: AssemblyDescription("Twitter client library")]
+[assembly: AssemblyTitle("Kahuna Twitter client library")]
+[assembly: AssemblyDescription("Nitwit: Twitter client library (final_name)")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Twitter client library")]
+[assembly: AssemblyProduct("Nitwit: Twitter client library (final_name)")]
 [assembly: AssemblyCopyright("Copyright ©  2009 Sam Saint-Pettersen")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
