@@ -325,9 +325,10 @@ namespace Nitwit {
                 throw new ArgumentException("followUser only accepts JSON or XML response.");
             }
             string url = string.Format(ApiUrl, getGroupStr(ApiGroup.Friendships), 
-            getMethodStr(ApiMethod.Create) + "/" + IDorScreenName, getFormatStr(format) + 
-            getAppendStr(ApiMethod.Follow) + notifs.ToString().ToLower());
-            Console.WriteLine("Debug:::" + url);
+            getMethodStr(ApiMethod.Create) + "/" + IDorScreenName, getFormatStr(format));
+            if(notifs) {
+                url += string.Format(getAppendStr(ApiMethod.Follow) + notifs.ToString().ToLower());
+            }
             return executeHttpPost(url, username, password);
         }
 
@@ -359,16 +360,16 @@ namespace Nitwit {
         /// <param name="username">Authenticating user's username</param>
         /// <param name="password">Authenticating user's password</param>
         /// <param name="IDorScreenName">ID or screen name of user to unfollow</param>
-        /// <param name="format"></param>
-        /// <returns></returns>
+        /// <param name="format">Data format to return reponse in</param>
+        /// <returns>Returns response in specified data format</returns>
         public string removeFriend(string username, string password, string IDorScreenName,
         DataFormat format) {
-            if (format == DataFormat.RSS || format == DataFormat.Atom)
-            {
+            if (format == DataFormat.RSS || format == DataFormat.Atom) {
                 throw new ArgumentException("removeFriend only accepts JSON or XML response.");
             }
             string url = string.Format(ApiUrl, getGroupStr(ApiGroup.Friendships),
-            getMethodStr(ApiMethod.Destroy), getFormatStr(format));
+            getMethodStr(ApiMethod.Destroy) + "/" + IDorScreenName, getFormatStr(format));
+            Console.WriteLine("Debug::" + url);
             return executeHttpPost(url, username, password);
         }
 
@@ -385,8 +386,7 @@ namespace Nitwit {
             }
             return null;
         }
-            
-            
+               
         #endregion
 
         #endregion
