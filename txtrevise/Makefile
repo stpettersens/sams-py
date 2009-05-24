@@ -11,15 +11,19 @@
 TARGET = txtrevise
 INSTALL_DIR_U = /usr/bin 
 INSTALL_DIR_W = /c/dev/bin
+FREEZE = /usr/lib/python2.6/Tools/freeze/freeze.py
 
-make:
+make: 
 	@echo
 	@echo make py2exe - build + install py2exe executable
 	@echo make freeze - build + install Freeze Unix exectuable
-
-py2exe:
 	@echo
-	@echo Building executable...
+	@echo On Unix-like systems run make with sudo
+	@echo e.g. sudo make freeze
+
+py2exe: create_exe.py ${TARGET}.py
+	@echo
+	@echo Building executable for Win...
 	python create_exe.py py2exe
 	rm -r build
 	rm dist/w9xpopen.exe
@@ -30,6 +34,11 @@ py2exe:
 	mv dist/${TARGET}.exe ${INSTALL_DIR_W}
 	@echo Done.
 	
-freeze:
-	#TODO
-
+freeze: ${TARGET}.py
+	@echo
+	@echo Building executable for Unix-like...
+	mkdir build
+	cd build 
+	${FREEZE} ${TARGET}.py
+	@echo Installing executable...
+	
