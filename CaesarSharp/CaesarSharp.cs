@@ -86,7 +86,7 @@ namespace CaesarSharp {
             string decrypted = null;
             foreach(char ch in encrypted) {
                 // Only decrypt existing cipher keys
-                if (cicero.ContainsKey(ch)) decrypted += getVal(ch);
+                if(cicero.ContainsKey(ch)) decrypted += getVal(ch);
                 else decrypted += ch;
             }
             return decrypted;
