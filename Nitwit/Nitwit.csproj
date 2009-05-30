@@ -8,7 +8,7 @@
     <ProjectGuid>{A29E2203-886A-474C-BFB8-90E6481B0802}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Nitwit</RootNamespace>
+    <RootNamespace>SamsPy</RootNamespace>
     <AssemblyName>Nitwit</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

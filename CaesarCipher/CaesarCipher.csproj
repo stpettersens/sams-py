@@ -8,8 +8,8 @@
     <ProjectGuid>{8797B75C-DB8C-4996-BA18-D6394B0786EC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CaesarSharp</RootNamespace>
-    <AssemblyName>CaesarSharp</AssemblyName>
+    <RootNamespace>SamsPy</RootNamespace>
+    <AssemblyName>CaesarCipher</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -38,9 +38,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CaesarSharp.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="CaesarCipher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

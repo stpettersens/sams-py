@@ -1,5 +1,5 @@
 ﻿/*
-    Caesar# ("kaiser sharp")
+    CaesarCipher
     Version 1.0
 
     A simple .NET library to encrypt and decrypt
@@ -17,9 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CaesarSharp {
+namespace SamsPy {
 
-    public class Cipher {
+    public class CaesarCipher {
 
         private char[] keys = { 
         'h', 'z', 'f', 'y', 'k', 'i', 'b', 'c', 'p', 'n', 'o', 'q', 'd', 'x', 'u', 'g', 
@@ -38,7 +38,7 @@ namespace CaesarSharp {
 
         private Dictionary<char, char> caesar = new Dictionary<char, char>();
         private Dictionary<char, char> cicero = new Dictionary<char, char>();
-        public Cipher() { // Populate Caesar and Cicero dictionaries on initialization
+        public CaesarCipher() { // Populate Caesar and Cicero dictionaries on initialization
             int i = 0;
             foreach(char v in vals) {
                 caesar.Add(v, keys[i]);

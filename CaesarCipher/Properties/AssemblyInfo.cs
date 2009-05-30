@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CaesarSharp encryption library")]
+[assembly: AssemblyTitle("CaesarCipher encryption library")]
 [assembly: AssemblyDescription("Encryption library")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CaesarSharp encyption library")]
+[assembly: AssemblyProduct("CaesarCipher encryption library")]
 [assembly: AssemblyCopyright("Copyright ©  2009 Sam Saint-Pettersen")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

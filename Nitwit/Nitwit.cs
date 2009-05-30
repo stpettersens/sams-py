@@ -14,9 +14,9 @@ using System.IO;
 using System.Net;
 using System.Xml;
 
-namespace Nitwit {
+namespace SamsPy {
 
-    public class Twitter {
+    public class NitWit {
 
         #region LibraryDefines
 
