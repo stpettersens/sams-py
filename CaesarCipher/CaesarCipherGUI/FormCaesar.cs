@@ -17,11 +17,13 @@ namespace SamsPy {
 
         private void btnGo_Click(object sender, EventArgs e) {
             if(this.rdoEncrypt.Checked) {
-                this.txtArea.Text = 
-                CaesarCipherGUI.encrypt(this.txtArea.Text);
+                this.txtArea.Text = CaesarCipherGUI.encrypt(this.txtArea.Text);
+                rdoDecrypt.Checked = true;
             }
-            else this.txtArea.Text = CaesarCipherGUI.decrypt(this.txtArea.Text);
-
+            else {
+                this.txtArea.Text = CaesarCipherGUI.decrypt(this.txtArea.Text);
+                rdoEncrypt.Checked = true;
+            }
         }
 
         private void txtArea_TextChanged(object sender, EventArgs e) {
