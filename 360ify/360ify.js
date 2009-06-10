@@ -1,30 +1,44 @@
-// <JETPACK>
+// 
 // @title: 360ify 
-// @description: Xbox 360 achievements notifier
+// @description: Xbox 360 achievements notifier for Jetpack
 // @author: Sam Saint-Pettersen
 // @url: http://code.google.com/p/sams-py
 // @license: MIT License
-// Special thanks to Duncan Mackenzie (@duncanma) 
+// Special thanks to Duncan Mackenzie (http://duncanmackenzie.net) 
 // for his Xbox gamertag REST API which this script uses.
 // This work is in no way affliated with or otherwise endorsed 
 // by Microsoft Corporation.
 // http://bit.ly/xboxgtapi
-// http://duncanmackenzie.net
-// </JETPACK>
-var title = " - 360ify";
-var xboxLive = 'http://live.xbox.com';
+//
+var xboxLive = 'http://live.xbox.com/member/';
 var xboxIcon = 'http://img8.imageshack.us/img8/7338/360ifyr.png';
-var xboxGTApi = 'http://duncanmackenzie.net/services/GetXboxInfo.aspx';
-var gamerTag = 'earlsKarma'; // Temporary, gamer tag will be able to be set
-function showProfile() {
-    // Cannot make cross domain requests with current Jetpack like you can with Greasemonkey
-    // work around is to try to use Greasemonkey for getting the feeds (?)
+var xboxGTApi = 'http://duncanmackenzie.net/services/GetXboxInfo.aspx?GamerTag=';
+var gamerTag = 'earlsKarma'; // Gamer tag will be set at install time, TODO: chaget to %GAMER%
+var caption = gamerTag + ' @ Xbox Live';
+var url = xboxGTApi + gamerTag;
+var finalG = null;
+function getProfile() {
+    $.get(url, function(xbp) {
+        var gamerIcon = $(xbp).find('TileUrl').text();
+        var gameScore = $(xbp).find('GamerScore:first').text();
+        var gamerRepu = $(xbp).find('Reputation').text();
+        var lastGameT = $(xbp).find('Game:first').find('Name').text();
+        var lastGameG = $(xbp).find('XboxUserGameInfo:first').find('GamerScore').text();
+        var lastGameA = $(xbp).find('XboxUserGameInfo:first').find('Achievements').text();
+        // Convert rating percentage to stars out of 5
+        gamerRepu = Math.round(parseFloat(gamerRepu / 20));
+	    // Parse gamer score as integer, so we can tell if its changed since last time
+	    finalG = parseInt(gameScore);
+        var msg = 'G: ' + gameScore + '  Rep: ' + gamerRepu
+        + '/5  ' + lastGameT + '  (G: ' + lastGameG + '  Ach: ' + lastGameA + ')';
+        jetpack.notifications.show({title: caption, body: msg, icon: gamerIcon});
+    });
 }
 jetpack.statusBar.append({
-    html: '<img src="' + xboxIcon + '">',
+    html: '<img src="' + xboxIcon + '"\/>',
     width: 16,
     onReady: function(doc) {
     $(doc).find("img").click(function() {
-        showProfile();
+        getProfile();
     });
 }});
