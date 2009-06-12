@@ -13,7 +13,7 @@
 var xboxLive = 'http://live.xbox.com/member/';
 var xboxIcon = 'http://img8.imageshack.us/img8/7338/360ifyr.png';
 var xboxGTApi = 'http://duncanmackenzie.net/services/GetXboxInfo.aspx?GamerTag=';
-var gamerTag = 'earlsKarma'; // Gamer tag will be set at install time, TODO: chaget to %GAMER%
+var gamerTag = '%GAMER%'; // Gamer tag will be set at install time
 var apiUrl = xboxGTApi + gamerTag;
 var profUrl = xboxLive + gamerTag;
 var finalG = null;
