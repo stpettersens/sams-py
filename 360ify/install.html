@@ -4,7 +4,6 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title>360ify</title>
-        <!-- Link resource will be added dynamically after configuration -->
 		<style type="text/css">
 			body { 
 				font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
@@ -32,21 +31,27 @@
 			<!--
 			// Function to create a configured script for a specific gamertag
 			function configure(script) { 
-			    var script = script + '.js';
-				var gamerTag, newScript = null;
+			    var fscript = script + '.js';
+				var utils = 'http://' + document.domain + '/utils/';
+				var gamerTag = null;
 				while(gamerTag == null || gamerTag == "") {
 					gamerTag = prompt("Enter your Xbox Live gamer tag:");
 					if(gamerTag == "") alert("You must enter a gamer tag.");
 				}
-				$.get(script, function(data) {
-					newScript = data.replace(/%GAMER%/, gamerTag);
+				$.get(fscript, function(data) {
+					data = data.replace(/%GAMER%/, gamerTag);
+				    // Invoke a server side script to write the modified file to the cache
+			        var fw = utils + 'file_writer.php?prj='
+					+ '../' + script + '/&out=cached/&src=' + script + '&data=' + data + '&ext=js';
+					alert(fw);
+				    $.get(fw, function(filename) {
+						fscript = filename;
+						// Insert configured script as a resource that can now be installed into Jetpack
+				        $('head').append('<link rel="jetpack" href="' + fscript + '"/>');
+						// TODO Schedule script for deletion in 5 minutes
+						// ...
+					});
 				});
-				// Invoke a PHP server side script to write the modfied file to the cache
-			    var fw = '../utils/file_cloner.php?prj=' + script + '&data=' + newScript + '&ext="js"';
-				// TODO... Cloned file will be 360ify_${GUID}.js
-				
-				// Insert configured script as a resource that can now be installed into Jetpack
-				$('head').append('<link rel="jetpack" href="cached/' + newScript + '"/>');
 				// Cross configuration step off the list and remove configure button
 				$('li:first').css('text-decoration', 'line-through');
 				$('form').remove();
