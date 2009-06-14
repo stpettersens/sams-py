@@ -10,9 +10,8 @@
 				font-size: 12px;
 				text-align:center;
 			}
-			.important { 
-				color: #FF0000;
-				font-weight: bold;
+			.blurb {
+				font-style: italic;
 			}
 			a { 
 				color: #000000;
@@ -23,31 +22,52 @@
 			fieldset {
 				border-style: none;
 			}
-		
 		</style>
-		<!-- Installation code uses functionality offered by jQuery -->
-		<script type="application/javascript" src="../lib/jquery-1.3.2.min.js"></script>
-		<script type="application/javascript">
+		<!-- Embedded script uses functionality offered by jQuery 
+		OT: Why the heck does IE still not support 'application/javascript'? -->
+		<script type="text/javascript" src="../lib/jquery-1.3.2.min.js"></script>
+		<script type="text/javascript">
 			<!--
+			//
+			// Function to check user agent being used, as Jetpacks need Firefox 3+
+			// If not Firefox 3+, show message and do not allow anything to be done
+			// If is Firefox 3+, prompt user to be sure that Jetpack is installed
+			//
+			function checkUserAgent() {
+				if (navigator.userAgent.search(/Firefox\/3.*/) == -1) {
+					$('form').remove();
+					var msg = 'The browser you are using is NOT Firefox 3+ and is therefore'
+					msg += ' unsupported by Jetpack.';
+					$('div').append('<p class="blurb">' + msg + '</p>');
+				}
+				else {
+					var msg = 'Please be sure that you have <a href=\'https://jetpack.mozillalabs.com\'>';
+					msg += 'Jetpack</a> installed before clicking Configure...'
+					$('div').append('<p class="blurb">' + msg + '</p>');
+				}
+			}
+			
+			//
 			// Function to create a configured script for a specific gamertag
+			//
 			function configure(script) { 
+			    $('p:first').remove();
 			    var fscript = script + '.js';
 				var utils = 'http://' + document.domain + '/utils/';
 				var gamerTag = null;
 				while(gamerTag == null || gamerTag == "") {
-					gamerTag = prompt("Enter your Xbox Live gamer tag:");
-					if(gamerTag == "") alert("You must enter a gamer tag.");
+					gamerTag = prompt('Enter your Xbox Live gamer tag:');
+					if(gamerTag == '') alert('You must enter a gamer tag.');
 				}
 				$.get(fscript, function(data) {
 					data = data.replace(/%GAMER%/, gamerTag);
-				    // Invoke a server side script to write the modified file to the cache
-			        var fw = utils + 'file_writer.php?prj='
+					// Invoke a server side script to write the modified file to the cache
+					var fw = utils + 'file_writer.php?prj='
 					+ '../' + script + '/&out=cached/&src=' + script + '&data=' 
 					+ encodeURIComponent(data) + '&ext=js';
-				    $.get(fw, function(filename) {
-						fscript = filename;
+                    $.get(fw, function(fscript) {
 						// Insert configured script as a resource that can now be installed into Jetpack
-				        $('head').append('<link rel="jetpack" href="' + fscript + '"/>');
+                        $('head').append('<link rel="jetpack" href="' + fscript + '"/>');
 						// TODO Schedule script for deletion in 5 minutes
 						// ...
 					});
@@ -56,21 +76,17 @@
 				$('li:first').css('text-decoration', 'line-through');
 				$('form').remove();
 				// Display instruction and notice that script will be wiped from server after 5 minutes
-				var msg = 'If you have <a href=\'https://jetpack.mozillalabs.com\'>';
-				msg += 'Jetpack</a> installed, you should now see a notice at the top of';
+				var msg = 'You should now see a notice at the top of';
 				msg += ' this page which will allow you to install the script.<br/> Your configured script will';
 				msg += ' be deleted from this web server after 5 minutes.';
-				$('body').append('<p style="font-style: italic;">' + msg + '</p>');
+				$('div').append('<p class="blurb">' + msg + '</p>');
 			}
 			-->
 		</script>
     </head>
-    <body>
-        <div class="blurb">
-        	<h1>360ify for Jetpack.</h1>
-			<noscript>
-				<p class="important">JavaScript must be enabled to install this Jetpack.</p>
-			</noscript>
+    <body onload="checkUserAgent();">
+        <div>
+        	<h2>360ify for Jetpack.</h2>
 			<ol>
 				<li>Configure 360ify to use your gamer tag</li>
 				<li>Install 360ify Jetpack feature</li>
@@ -80,6 +96,9 @@
 					<input onclick="configure('360ify');" value="Configure..." type="button"></input>
 				</fieldset>
 			</form>
+			<noscript>
+				<p class="blurb">JavaScript must be enabled to install this Jetpack.</p>
+			</noscript>
         </div>
     </body>
 </html>

@@ -18,12 +18,16 @@ require_once "uuid_generator.php";
 function fileWriter($prj, $out, $src, $data, $ext) {
 	// Generate UUID suffix for file
 	$uuid = uuid();
-	// Write out the file to the output folder
-	$fh = fopen($prj . $out . $src . '_' . $uuid . '.' . $ext, 'w');
-	fwrite($fh, str_replace('\\', '', rawurldecode($data)));
-	fclose($fh);
-	// Return relative path to calling code (echo)
-	echo $out . $src . '_' . $uuid . '.' . $ext;
+	// When all parameters are passed when invoking...
+	if($prj != null or $out != null or $src != null or $data != null or $ext != null) {
+		// Write out the file to the output folder
+		$fh = fopen($prj . $out . $src . '_' . $uuid . '.' . $ext, 'w');
+		fwrite($fh, str_replace('\\', '', rawurldecode($data))); 
+		fclose($fh);
+		// Return relative path to calling code (echo)
+		echo $out . $src . '_' . $uuid . '.' . $ext;
+	// Otherwise, return insufficient parameters message to calling code (echo)
+	} else echo 'Error: Insufficient parameters given.';
 }
 fileWriter($_GET['prj'], $_GET['out'], $_GET['src'], $_GET['data'], $_GET['ext']);
 ?>
