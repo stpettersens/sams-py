@@ -17,8 +17,8 @@ var gamerTag = '%GAMER%'; // Gamer tag will be set at install time
 var apiUrl = xboxGTApi + gamerTag;
 var profUrl = xboxLive + gamerTag;
 var finalG = null;
-function getProfile() {
-    $.get(apiUrl, function(xbp) {
+function getProfile(){
+    $.get(apiUrl, function(xbp){
         var caption = gamerTag + ' on Xbox Live';
         var gamerIcon = $(xbp).find('TileUrl').text();
         var gameScore = $(xbp).find('GamerScore:first').text();
@@ -32,21 +32,26 @@ function getProfile() {
         gamerRepu = Math.round(parseFloat(gamerRepu / 20));
         // Parse gamer score as integer, so we can tell if its changed since last time
         finalG = parseInt(gameScore);
-        var msg = 'G: ' + gameScore + '  Rep: ' + gamerRepu + '/5  ' + lastGameT
-        + '  (G: ' + lastGameG + '/' + lastGameTG + '  Ach: ' + lastGameA + '/' 
-        + lastGameTA + ')';
-        jetpack.notifications.show({title: caption, body: msg, icon: gamerIcon});
+        var msg = 'G: ' + gameScore + '  Rep: ' + gamerRepu + '/5  ' + lastGameT +
+        '  (G: ' + lastGameG + '/' + lastGameTG + '  Ach: ' + lastGameA + '/' +  lastGameTA + ')';
+        jetpack.notifications.show({
+            title: caption,
+            body: msg,
+            icon: gamerIcon
+        });
         /*if(jetpack.tabs.focused.url.match(/xbox/) == null) {
-            var profTab = jetpack.tabs.open(profUrl);
-            profTab.focus();
-        }*/
+         var profTab = jetpack.tabs.open(profUrl);
+         profTab.focus();
+         }*/
     });
 }
+
 jetpack.statusBar.append({
     html: '<img src="' + xboxIcon + '"\/>',
     width: 16,
-    onReady: function(doc) {
-    $(doc).find("img").click(function() {
-        getProfile();
-    });
-}})
+    onReady: function(doc){
+        $(doc).find("img").click(function(){
+            getProfile();
+        });
+    }
+})

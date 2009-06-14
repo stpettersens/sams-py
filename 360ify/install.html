@@ -42,8 +42,8 @@
 					data = data.replace(/%GAMER%/, gamerTag);
 				    // Invoke a server side script to write the modified file to the cache
 			        var fw = utils + 'file_writer.php?prj='
-					+ '../' + script + '/&out=cached/&src=' + script + '&data=' + data + '&ext=js';
-					alert(fw);
+					+ '../' + script + '/&out=cached/&src=' + script + '&data=' 
+					+ encodeURIComponent(data) + '&ext=js';
 				    $.get(fw, function(filename) {
 						fscript = filename;
 						// Insert configured script as a resource that can now be installed into Jetpack
