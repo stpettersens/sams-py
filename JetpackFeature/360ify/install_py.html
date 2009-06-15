@@ -65,7 +65,6 @@
 					var fw = utils + 'file_writer.py?out=' + script + '/cached/' + script + '&data=' 
 					+ encodeURIComponent(data) + '&ext=js';
                     $.get(fw, function(fscript) {
-						alert(fscript);
 						// Insert configured script as a resource that can now be installed into Jetpack
                         $('head').append('<link rel="jetpack" href="' + fscript + '"/>');
 						// TODO Schedule script for deletion in 5 minutes
