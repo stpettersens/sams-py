@@ -62,10 +62,10 @@
 				$.get(fscript, function(data) {
 					data = data.replace(/%GAMER%/, gamerTag);
 					// Invoke a server side script to write the modified file to the cache
-					var fw = utils + 'file_writer.php?prj='
-					+ '../' + script + '/&out=cached/&src=' + script + '&data=' 
+					var fw = utils + 'file_writer.php?out=../' + script + '/cached/' + script + '&data=' 
 					+ encodeURIComponent(data) + '&ext=js';
                     $.get(fw, function(fscript) {
+						alert(fscript);
 						// Insert configured script as a resource that can now be installed into Jetpack
                         $('head').append('<link rel="jetpack" href="' + fscript + '"/>');
 						// TODO Schedule script for deletion in 5 minutes
