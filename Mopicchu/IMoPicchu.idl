@@ -1,0 +1,16 @@
+/*
+	MoPicchu stack engine
+	Copyright (c) 2008 Samuel Saint-Pettersen
+	Released under the MIT License
+	Interface definition for MoPicchu stack engine
+*/
+
+#include "nsISupports.idl"
+
+[scriptable, uuid(832A4ADF-F123-4e48-B322-E3563B7B1034)] 
+interface IMoPicchu : nsISupports {
+	long Define(in long psize);
+	void Drop(in string pval);
+	ACString Pull();
+	void Reset();
+};

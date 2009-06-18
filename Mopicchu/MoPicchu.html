@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<title>Test Stack/Queue component</title>
+		<script type="application/javascript">
+		
+			/*
+				PARAMS FOR DEFINE()
+				1 to 100 -> define size of the stack/queue
+				-1 -> return defined size of the stack/queue
+				-2 -> return maximum allowable size for the stack/queue		
+				
+				PARAMS FOR DROP()
+				
+				String -> value for selected stack/queue index
+				(extra drop) -> indicates end of dropping
+				
+				RETURNS FOR PULL()
+				
+				The dropped value in FILO/FIFO order 
+				"End" -> reached end of the stack/queue
+			*/
+			
+			const cid = "@mopicchu.googlecode.com/MoPicchu;1";
+			var mp = null;
+
+			function define() {
+				netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+				mp = Components.classes[cid].createInstance();
+				mp = mp.QueryInterface(Components.interfaces.IMoPicchu);
+				var isset = mp.Define(3); // define the stack size as 3
+				document.getElementById("drop").removeAttribute("disabled");
+				document.getElementById("retsize").removeAttribute("disabled");
+				
+			}
+			
+			function drop() {
+				netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+				mp = Components.classes[cid].createInstance();
+				mp = mp.QueryInterface(Components.interfaces.IMoPicchu);
+				for(var i = 0; i < 3; i++) {
+					var string = prompt("Enter a string to drop onto the stack/queue:");
+					mp.Drop(string);
+				}
+				mp.Drop(""); // extra drop to indicate end of dropping
+				document.getElementById("pull").removeAttribute("disabled");
+			}
+			
+			function pull() {
+				netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+				mp = Components.classes[cid].createInstance();
+				mp = mp.QueryInterface(Components.interfaces.IMoPicchu);
+				alert(mp.Pull()); // pull value from the stack/queue	
+			}
+			
+			function retsize() {
+				netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+				mp = Components.classes[cid].createInstance();
+				mp = mp.QueryInterface(Components.interfaces.IMoPicchu);
+				var size = mp.Define(-1); // return the stack/queue size; should return 5
+				alert("Stack size is " + size);
+				var max = mp.Define(-2); // return maximum allowable stack/queue size; should return 100
+				alert("Maximum size is " + max);
+			}
+			
+		</script>
+	</head>
+	<body>
+		<fieldset>
+			<input id="define" type="button" value="Define" onclick="define();"/> (click only once)
+			<input id="drop" type="button" disabled="true" value="Drop" onclick="drop();"/> (click only once)
+			<input id="pull" type="button" disabled="true" value="Pull" onclick="pull();"/> 
+			<input id="retsize" type="button" disabled="true" value="Return size" onclick="retsize();"/>
+		</fieldset>
+	</body>
+</html>
