@@ -39,10 +39,10 @@ function getProfile(){
             body: msg,
             icon: gamerIcon
         });
-        /*if(jetpack.tabs.focused.url.match(/xbox/) == null) {
-         var profTab = jetpack.tabs.open(profUrl);
-         profTab.focus();
-         }*/
+        if(jetpack.tabs.focused.url.match(/xbox/) == null) {
+			var profTab = jetpack.tabs.open(profUrl);
+			profTab.focus();
+		}
     });
 }
 
