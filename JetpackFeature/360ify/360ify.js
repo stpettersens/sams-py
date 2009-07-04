@@ -22,12 +22,18 @@ function getProfile(){
         var caption = gamerTag + ' on Xbox Live';
         var gamerIcon = $(xbp).find('TileUrl').text();
         var gameScore = $(xbp).find('GamerScore:first').text();
+		if(gameScore == null) gamerScore = 0;
         var gamerRepu = $(xbp).find('Reputation').text();
         var lastGameT = $(xbp).find('Game:first').find('Name').text();
+		if(lastGameT == null) lastGameT = '(No games played on Xbox Live.)';
         var lastGameG = $(xbp).find('XboxUserGameInfo:first').find('GamerScore').text();
+		if(lastGameG == null) lastGameG = 0;
         var lastGameA = $(xbp).find('XboxUserGameInfo:first').find('Achievements').text();
+		if(lastGameA == null) lastGameA = 0;
         var lastGameTG = $(xbp).find('TotalGamerScore:first').text();
+		if(lastGameTG == null) lastGameTG = 0;
         var lastGameTA = $(xbp).find('TotalAchievements:first').text();
+		if(lastGameTA == null) lastGameTA = 0;
         // Convert rating percentage to stars out of 5
         gamerRepu = Math.round(parseFloat(gamerRepu / 20));
         // Parse gamer score as integer, so we can tell if its changed since last time

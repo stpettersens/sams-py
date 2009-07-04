@@ -56,7 +56,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(143, 30);
             this.label2.TabIndex = 2;
-            this.label2.Text = "Ceasar by keepwaddling1\r\n / Flickr CC:BY";
+            this.label2.Text = "Caesar by keepwaddling1\r\n / Flickr CC:BY";
             // 
             // txtArea
             // 
