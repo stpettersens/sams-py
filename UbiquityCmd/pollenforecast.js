@@ -22,11 +22,15 @@ CmdUtils.CreateCommand({
 			formatted = formatted.replace(/\d+\s{1}\w{3}/g, ""); // Strip out dates, just keep days
 			formatted = formatted.replace(/not be/, "could not be"); // Correct grammar for errors
 			formatted = formatted.replace(/Select[\w\s\n\-\.]*/gm, "") // Strip out any verbose errors
+			formatted = formatted.replace(/VERY HIGH/g,
+			"<span style='font-size: 20px; font-weight: bold; color: #cc0000;'>VH</span>");
 			formatted = formatted.replace(/HIGH/g,
 			 "<span style='font-size: 20px; font-weight: bold; color: #ff0000;'>H</span>");
 			formatted = formatted.replace(/MEDIUM/g, 
 			"<span style='font-size: 20px; font-weight: bold; color: #ff6600;'>M</span>");
-			formatted = formatted.replace(/Pollen forecast is not available./, 
+			formatted = formatted.replace(/LOW/g,
+			"<span style='font-size: 20px; font-weight: bold; color: #009900;'>L</span>");
+			formatted = formatted.replace(/Pollen forecast is not available./g, 
 			"<span style='font-style: italic; color: #999999'>No forecast</span>");
 			data.forecast = formatted;
 			pblock.innerHTML = CmdUtils.renderTemplate(
