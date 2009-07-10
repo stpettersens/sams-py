@@ -1,6 +1,10 @@
-/* 
-   Get the UK pollen forecast for your postcode from GMTV
-*/
+//
+// @title: Pollen forecast
+// @description: Get the UK pollen forecast for your postcode from GMTV
+// @author: Sam Saint-Pettersen
+// @url: http://code.google.com/p/sams-py
+// @license: MIT License
+//
 CmdUtils.CreateCommand({
   names: ["pollen", "pollen count", "check pollen", "forecast pollen"],
   icon: "http://img17.imageshack.us/img17/4381/flowericon.gif",

@@ -13,45 +13,43 @@
 var xboxLive = 'http://live.xbox.com/member/';
 var xboxIcon = 'http://img8.imageshack.us/img8/7338/360ifyr.png';
 var xboxGTApi = 'http://duncanmackenzie.net/services/GetXboxInfo.aspx?GamerTag=';
-var gamerTag = '%GAMER%'; // Gamer tag will be set at install time
+var gamerTag = 'uberSamji'; // %GAMER% Gamer tag will be set at install time
 var apiUrl = xboxGTApi + gamerTag;
 var profUrl = xboxLive + gamerTag;
 var finalG = null;
 function getProfile(){
-    $.get(apiUrl, function(xbp){
-        var caption = gamerTag + ' on Xbox Live';
+	$.get(apiUrl, function(xbp) {
+		var caption = gamerTag + ' on Xbox Live';
         var gamerIcon = $(xbp).find('TileUrl').text();
         var gameScore = $(xbp).find('GamerScore:first').text();
-		if(gameScore == null) gamerScore = 0;
         var gamerRepu = $(xbp).find('Reputation').text();
         var lastGameT = $(xbp).find('Game:first').find('Name').text();
-		if(lastGameT == null) lastGameT = '(No games played on Xbox Live.)';
-        var lastGameG = $(xbp).find('XboxUserGameInfo:first').find('GamerScore').text();
-		if(lastGameG == null) lastGameG = 0;
+        var lastGameG = $(xbp).find('XboxUserGameInfo:first').find('GamerScore').text();;
         var lastGameA = $(xbp).find('XboxUserGameInfo:first').find('Achievements').text();
-		if(lastGameA == null) lastGameA = 0;
         var lastGameTG = $(xbp).find('TotalGamerScore:first').text();
-		if(lastGameTG == null) lastGameTG = 0;
         var lastGameTA = $(xbp).find('TotalAchievements:first').text();
-		if(lastGameTA == null) lastGameTA = 0;
+		
+        // When no values found in XML, use these defaults
+        if(lastGameT == '') lastGameT = 'No games played.';
+        if(lastGameG == '') lastGameG = 0;
+        if(lastGameA == '') lastGameA = 0;
+        if(lastGameTG == '') lastGameTG = 0;
+        if(lastGameTA == '') lastGameTA = 0;
+		
         // Convert rating percentage to stars out of 5
         gamerRepu = Math.round(parseFloat(gamerRepu / 20));
         // Parse gamer score as integer, so we can tell if its changed since last time
         finalG = parseInt(gameScore);
         var msg = 'G: ' + gameScore + '  Rep: ' + gamerRepu + '/5  ' + lastGameT +
         '  (G: ' + lastGameG + '/' + lastGameTG + '  Ach: ' + lastGameA + '/' +  lastGameTA + ')';
-        jetpack.notifications.show({
-            title: caption,
-            body: msg,
-            icon: gamerIcon
-        });
+        jetpack.notifications.show({title: caption, body: msg, icon: gamerIcon});
         if(jetpack.tabs.focused.url.match(/xbox/) == null) {
-			var profTab = jetpack.tabs.open(profUrl);
+            var profTab = jetpack.tabs.open(profUrl);
 			profTab.focus();
-		}
+        }
     });
 }
-
+// Append Xbox icon to status bar
 jetpack.statusBar.append({
     html: '<img src="' + xboxIcon + '"\/>',
     width: 16,
