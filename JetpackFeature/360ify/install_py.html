@@ -34,14 +34,14 @@
 			// If is Firefox 3+, prompt user to be sure that Jetpack is installed
 			//
 			function checkUserAgent() {
-				if (navigator.userAgent.search(/Firefox\/3.*/) == -1) {
+				if (navigator.userAgent.search(/Firefox\/3.+/) == -1) {
 					$('form').remove();
 					var msg = 'The browser you are using is NOT Firefox 3+ and is therefore'
 					msg += ' unsupported by Jetpack.';
 					$('div').append('<p class="blurb">' + msg + '</p>');
 				}
 				else {
-					var msg = 'Please be sure that you have <a href=\'https://jetpack.mozillalabs.com\'>';
+					var msg = 'Please be sure that you have <a href="https://jetpack.mozillalabs.com">';
 					msg += 'Jetpack</a> installed before clicking Configure...'
 					$('div').append('<p class="blurb">' + msg + '</p>');
 				}
@@ -64,9 +64,9 @@
 					// Invoke a server side script to write the modified file to the cache
 					var fw = utils + 'file_writer.py?out=' + script + '/cached/' + script + '&data=' 
 					+ encodeURIComponent(data) + '&ext=js';
-                    $.get(fw, function(fscript) {
+                    			$.get(fw, function(fscript) {
 						// Insert configured script as a resource that can now be installed into Jetpack
-                        $('head').append('<link rel="jetpack" href="' + fscript + '"/>');
+                        			$('head').append('<link rel="jetpack" href="' + fscript + '"/>');
 						// TODO Schedule script for deletion in 5 minutes
 						// ...
 					});
@@ -90,14 +90,14 @@
 				<li>Configure 360ify to use your gamer tag</li>
 				<li>Install 360ify Jetpack feature</li>
 			</ol>
-		    <form action="null">
-		    	<fieldset>
-					<input onclick="configure('360ify');" value="Configure..." type="button"></input>
-				</fieldset>
-			</form>
-			<noscript>
-				<p class="blurb">JavaScript must be enabled to install this Jetpack.</p>
-			</noscript>
+		<form action="null">
+			<fieldset>
+				<input onclick="configure('360ify');" value="Configure..." type="button"></input>
+			</fieldset>
+		</form>
+		<noscript>
+			<p class="blurb">JavaScript must be enabled to install this Jetpack.</p>
+		</noscript>
         </div>
     </body>
 </html>
