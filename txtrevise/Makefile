@@ -17,9 +17,6 @@ make:
 	@echo
 	@echo make py2exe - build + install py2exe executable
 	@echo make freeze - build + install Freeze Unix exectuable
-	@echo
-	@echo On Unix-like systems run make with sudo
-	@echo e.g. sudo make freeze
 
 py2exe: create_exe.py ${TARGET}.py
 	@echo
