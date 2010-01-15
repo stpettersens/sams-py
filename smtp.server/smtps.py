@@ -1,6 +1,5 @@
 """
 Simple Mail Transport Protocol (SMTP) server
-As implemented in Python
 Copyright (c) 2010 Sam Saint-Pettersen
 
 Released under the MIT License
@@ -21,6 +20,7 @@ def listen():
     """
     Listen for and handle SMTP commands
     """
+    msg = ''
     PORT = 25
     print('Listening on port %d...' % PORT)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,13 +28,12 @@ def listen():
     s.listen(1)
     conn, addr = s.accept()
     while 1:
-        data = conn.recv(4096)
-        if data.endswith('\n'):
-            print(data)
-        
+        data = conn.recv(1024)
+        msg += data  
+        if msg.endswith('\n'):  # Will be CRLF
+            print('>> %s' % msg)
+            msg = ''
         if not data: break
-        #conn.send(data)
-   
     conn.close()
 
 # Invoke main method on run
