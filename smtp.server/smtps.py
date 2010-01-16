@@ -26,7 +26,6 @@ class SMTPServer:
         self.listen()
         
     def parseCommand(self, received):
-        return '250 OK\r\n'
         
     def listen(self, port=26):
         received = ''
