@@ -17,12 +17,13 @@ class AppInfo:
         
 class SMTPCommand:
     def helo(self):
+        # Do client look up here
         return '250 OK'
 
 class SMTPServer:
     def __init__(self):
         print(__doc__)
-        self.state = 0
+        self.state = 0 # Start in listen state
         self.listen()
         
     def parseCommand(self, received):
@@ -38,15 +39,17 @@ class SMTPServer:
         while True:
             if self.state == 0:
                 date = datetime.datetime.now()
+                # Relay connected information to client
                 conn.send('220 {0} {1}\r\n'.format(AppInfo().greet, date))
                 print('>> 220 Client connected.\n')
                 self.state += 1
             chunk = conn.recv(1024)
             received += chunk
-            if received.endswith('\r\n'): 
-                print('>> %s' % received)
+            # Wait for command termination characters (CR+LF) before continuing
+            if received.endswith('\r\n'):
+                print('>> {0}'.format(received))
                 returned = self.parseCommand(received)
-                print('<< %s' % returned)
+                print('<< {0}'.format(returned))
                 conn.send(returned)
                 received = ''
             if not chunk: break
