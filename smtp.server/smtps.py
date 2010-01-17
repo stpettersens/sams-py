@@ -59,7 +59,7 @@ class SMTPServer:
                 print('<< {0}'.format(returned))
                 conn.send(returned)
                 received = ''
-            if not chunk or returned == self.ExitMsg : break
+            if not chunk or returned == self.ExitMsg: break
         conn.close()
        
 if __name__ == '__main__': SMTPServer()
