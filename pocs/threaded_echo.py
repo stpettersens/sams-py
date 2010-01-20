@@ -8,6 +8,11 @@ import socket
 import threading
 import signal
 
+control = 0
+class EchoServerAttribs():
+    def __init__(self):
+        self.name = 'Echo server'
+
 class EchoServer(threading.Thread):
     def run(self):
         print(__doc__)
@@ -16,11 +21,23 @@ class EchoServer(threading.Thread):
         s.listen(1)
         channel, details = s.accept()
         while True:
-            print(channel.recv(1024))
+            chunk = channel.recv(1024)
+            print(chunk)
+            break
+        channel.close()
+        quit()
 
-def quit(signum, frame):
-    sys.exit(0)
+def quit():
+    print('\n{0} terminated.'.format(EchoServerAttribs().name))
+    global control
+    control = 1
 
+def quit_handler(signum, frame):
+    quit()
+
+EchoServer().setDaemon(True)
 EchoServer().start()
-while True:
-    signal.signal(signal.SIGINT, quit)
+while control == 0:
+    signal.signal(signal.SIGINT, quit_handler)
+    if control == 1: break
+sys.exit(0)
