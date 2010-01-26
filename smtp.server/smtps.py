@@ -17,11 +17,29 @@ class SMTPCommand:
         # ...
         return '250 OK\r\n'
         
-    def quit(self):
+    def ehlo(self): # Alias for HELO
+        return self.helo()
+        
+    def mail(self):
         pass
         
-    def unrecognised(self):
+    def rcpt(self):
         pass
+    
+    def data(self):
+        pass
+    
+    def help(self):
+        pass
+        
+    def rset(self):
+        pass
+        
+    def quit(self):
+        return '221 ' + SMTPServerSW().ExitMsg
+        
+    def unknown(self):
+        return '550 Unknown command\r\n'
         
 class SMTPServerSW(threading.Thread):
     def __init__(self):
@@ -36,7 +54,15 @@ class SMTPServerSW(threading.Thread):
         self.listen()
         
     def parseCommand(self, command):
-        return SMTPCommand().helo()
+        r = ''
+        try:
+            pattern = re.compile('^[A-Z]{4}\r\n', re.I)
+            if re.match(pattern, command):
+                command = command.replace('\r\n', '')
+                r = eval('SMTPCommand().{0}()'.format(command.lower()))
+        except AttributeError:
+            r = SMTPCommand().unknown()
+        return r
         
     def listen(self, port=26): # Change to port 25 later
         command = returned = ''
