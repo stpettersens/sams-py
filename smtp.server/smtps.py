@@ -13,19 +13,33 @@ import datetime
 import re
 
 class SMTPCommand:
-    def helo(self):
-        # ...
-        return '250 OK\r\n'
+    def helo(self, host=''):
+        SMTPServerSW().state = 1 
+        if host == '':
+            r = '501 HELO/EHLO requires a domain address\r\n'
+        else:
+            r = '250 Hello, {0}\r\n'.format(host)
+        return r
         
-    def ehlo(self): # Alias for HELO
-        return self.helo()
+    def ehlo(self, host=''): # Alias for HELO
+        return self.helo(host)
         
-    def mail(self):
-        pass
+    def mail(self, sender=''):
+        SMTPServerSW().state = 2
+        if sender == '':
+            r = '501 MAIL FROM: requires a sender address\r\n'
+        else:
+            r = '250 Sender address is {0}\r\n'.format(sender)
+        return r
         
-    def rcpt(self):
-        pass
-    
+    def rcpt(self, to=''):
+        SMTPServerSW().state = 3
+        if to == '':
+            r = '501 RCPT TO: requires a receipient address\r\n'
+        else:
+            r = '250 Receipient address is {0}\r\n'.format(to)
+        return r
+        
     def data(self):
         pass
     
@@ -36,7 +50,7 @@ class SMTPCommand:
         pass
         
     def quit(self):
-        return '221 ' + SMTPServerSW().ExitMsg
+        return SMTPServerSW().ExitMsg
         
     def unknown(self):
         return '550 Unknown command\r\n'
@@ -46,8 +60,8 @@ class SMTPServerSW(threading.Thread):
         self.Name = 'SMTP server'
         self.Vers = '0.1'
         self.Greeting = '{0} v{1}'.format(self.Name, self.Vers)
-        self.ExitMsg = 'Goodbye.\r\n'
-        self.state = 0 # Start in listen state (0)
+        self.ExitMsg = '221 Goodbye\r\n'
+        self.state = 0 # Start in waiting state (0)
         threading.Thread.__init__(self)
         
     def run(self):
@@ -56,10 +70,22 @@ class SMTPServerSW(threading.Thread):
     def parseCommand(self, command):
         r = ''
         try:
-            pattern = re.compile('^[A-Z]{4}\r\n', re.I)
-            if re.match(pattern, command):
+            patt_noparams = re.compile('^[A-Z]{4}\r\n', re.I)
+            patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z._]*[A-Z]{0,4}\:*[A-Z._@]*\r\n', re.I)
+            if re.match(patt_noparams, command):
                 command = command.replace('\r\n', '')
                 r = eval('SMTPCommand().{0}()'.format(command.lower()))
+            elif re.match(patt_w1param, command):
+                command = command.replace('\r\n', '')
+                if command.find(':') != -1:
+                    command, param = command.split(':')
+                    command, junk = command.split()
+                    del junk # Be a good command parser and throw away your unused junk data
+                else:
+                    command, param = command.split()
+                r = eval('SMTPCommand().{0}(\'{1}\')'.format(command.lower(), param.lower()))  
+            else:
+                r = SMTPCommand().unknown()             
         except AttributeError:
             r = SMTPCommand().unknown()
         return r
@@ -74,7 +100,7 @@ class SMTPServerSW(threading.Thread):
         while 1:
             if self.state == 0:
                 date = datetime.datetime.now()
-                # Relay connected information to client
+                # Relay connected information to client\
                 conn.send('220 {0} {1}\r\n'.format(self.Greeting, date))
                 print('>> {0} connected.\n'.format(addr))
                 self.state = 1 # Shift to ready state (1)
@@ -82,9 +108,7 @@ class SMTPServerSW(threading.Thread):
             command += chunk
             # Wait for command termination characters (CR+LF) before continuing
             if command.endswith('\r\n'):
-                print('>> {0}'.format(command))
                 returned = self.parseCommand(command)
-                print('<< {0}'.format(returned))
                 conn.send(returned)
                 command = ''
             if not chunk or returned == self.ExitMsg: break
