@@ -12,32 +12,34 @@ import threading
 import datetime
 import re
 
+class Helper:
+    def validateEmail(self, email):
+        pass
+
 class SMTPCommand:
+
     def helo(self, host=''):
-        SMTPServerSW().state = 1 
+        #...
         if host == '':
             r = '501 HELO/EHLO requires a domain address\r\n'
         else:
-            r = '250 Hello, {0}\r\n'.format(host)
+            r = '250 Hello, {0}. Have a message to send?\r\n'.format(host)
         return r
         
-    def ehlo(self, host=''): # Alias for HELO
-        return self.helo(host)
-        
-    def mail(self, sender=''):
-        SMTPServerSW().state = 2
+    def mailfrom(self, sender=''):
+        #...
         if sender == '':
             r = '501 MAIL FROM: requires a sender address\r\n'
         else:
-            r = '250 Sender address is {0}\r\n'.format(sender)
+            r = '250 {0}... Sender OK\r\n'.format(sender)
         return r
         
-    def rcpt(self, to=''):
-        SMTPServerSW().state = 3
+    def rcptto(self, to=''):
+        #...
         if to == '':
-            r = '501 RCPT TO: requires a receipient address\r\n'
+            r = '501 RCPT TO: requires a recipient address\r\n'
         else:
-            r = '250 Receipient address is {0}\r\n'.format(to)
+            r = '250 {0}... Recipient OK\r\n'.format(to)
         return r
         
     def data(self):
@@ -68,21 +70,21 @@ class SMTPServerSW(threading.Thread):
         self.listen()
         
     def parseCommand(self, command):
-        r = ''
+        r = param = ''
         try:
             patt_noparams = re.compile('^[A-Z]{4}\r\n', re.I)
-            patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z._]*[A-Z]{0,4}\:*[A-Z._@]*\r\n', re.I)
+            patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z._]*\:*\s*[<>A-Z._@]*\r\n', re.I)
             if re.match(patt_noparams, command):
-                command = command.replace('\r\n', '')
+                command = command.strip('\r\n')
                 r = eval('SMTPCommand().{0}()'.format(command.lower()))
             elif re.match(patt_w1param, command):
-                command = command.replace('\r\n', '')
+                command = command.strip('\r\n')
                 if command.find(':') != -1:
                     command, param = command.split(':')
-                    command, junk = command.split()
-                    del junk # Be a good command parser and throw away your unused junk data
+                    command = command.replace(' ', '')
                 else:
                     command, param = command.split()
+                param = param.strip()
                 r = eval('SMTPCommand().{0}(\'{1}\')'.format(command.lower(), param.lower()))  
             else:
                 r = SMTPCommand().unknown()             
@@ -100,7 +102,7 @@ class SMTPServerSW(threading.Thread):
         while 1:
             if self.state == 0:
                 date = datetime.datetime.now()
-                # Relay connected information to client\
+                # Relay connected information to client
                 conn.send('220 {0} {1}\r\n'.format(self.Greeting, date))
                 print('>> {0} connected.\n'.format(addr))
                 self.state = 1 # Shift to ready state (1)
