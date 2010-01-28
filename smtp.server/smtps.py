@@ -14,7 +14,12 @@ import re
 
 class Helper:
     def validateEmail(self, email):
-        pass
+        pattern = re.compile('^<[a-z0-9._]+\@[a-z0-9]+\.[a-z.]{2,5}>', re.I)
+        if re.match(pattern, email):
+            r = True
+        else:
+            r = False
+        return r
 
 class SMTPCommand:
 
@@ -30,8 +35,10 @@ class SMTPCommand:
         #...
         if sender == '':
             r = '501 MAIL FROM: requires a sender address\r\n'
-        else:
+        elif Helper().validateEmail(sender):
             r = '250 {0}... Sender OK\r\n'.format(sender)
+        else:
+            r = '5xx {0} is an invalid format for sender.\r\n'.format(sender)
         return r
         
     def rcptto(self, to=''):
@@ -73,7 +80,7 @@ class SMTPServerSW(threading.Thread):
         r = param = ''
         try:
             patt_noparams = re.compile('^[A-Z]{4}\r\n', re.I)
-            patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z._]*\:*\s*[<>A-Z._@]*\r\n', re.I)
+            patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z0-9._]*\:*\s*[<>a-z._@]*\r\n', re.I)
             if re.match(patt_noparams, command):
                 command = command.strip('\r\n')
                 r = eval('SMTPCommand().{0}()'.format(command.lower()))
