@@ -22,7 +22,6 @@ class Helper:
         return r
 
 class SMTPCommand:
-
     def helo(self, host=''):
         #...
         if host == '':
@@ -38,15 +37,17 @@ class SMTPCommand:
         elif Helper().validateEmail(sender):
             r = '250 {0}... Sender OK\r\n'.format(sender)
         else:
-            r = '5xx {0} is an invalid format for sender.\r\n'.format(sender)
+            r = '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(sender)
         return r
         
     def rcptto(self, to=''):
         #...
         if to == '':
             r = '501 RCPT TO: requires a recipient address\r\n'
-        else:
+        elif Helper().validateEmail(to):
             r = '250 {0}... Recipient OK\r\n'.format(to)
+        else:
+            r = '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(to)
         return r
         
     def data(self):
@@ -61,8 +62,8 @@ class SMTPCommand:
     def quit(self):
         return SMTPServerSW().ExitMsg
         
-    def unknown(self):
-        return '550 Unknown command\r\n'
+    def unknown(self, command):
+        return '550 Unknown command: {0}\r\n'.format(command.upper())
         
 class SMTPServerSW(threading.Thread):
     def __init__(self):
@@ -94,14 +95,14 @@ class SMTPServerSW(threading.Thread):
                 param = param.strip()
                 r = eval('SMTPCommand().{0}(\'{1}\')'.format(command.lower(), param.lower()))  
             else:
-                r = SMTPCommand().unknown()             
+                r = SMTPCommand().unknown(command)             
         except AttributeError:
-            r = SMTPCommand().unknown()
+            r = SMTPCommand().unknown(command)
         return r
         
-    def listen(self, port=26): # Change to port 25 later
+    def listen(self, port=26):
         command = returned = ''
-        print('Listening on port {0}...\n'.format(port))
+        print('\nListening on port {0}...\n'.format(port))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('', port))
         s.listen(1)
@@ -126,13 +127,33 @@ class SMTPServerSW(threading.Thread):
 class SMTPServer:
     def __init__(self):
         self.control = 0 # Initiate server application run state (0)
+        
+        # Handle command line options
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], 'hp')
+        except getopt.GetoptError, err:
+            err = str(err)
+            print('\n{0}.'.format(err.replace('o', 'O', 1)))
+            print(__doc__)
+            self.usage()
+            
+        for o, a in opts:
+            if o == '-h':
+                self.usage()
+            elif o == '-p':
+                pass
+                
         print(__doc__)
+        print('Use switch -h for help or -p to set port.')
         print('Hold Ctrl-C to terminate.')
         SMTPServerSW().setDaemon(True) 
         SMTPServerSW().start()
         while self.control == 0:
             signal.signal(signal.SIGINT, self.quit)
             if self.control == 1: break
+        sys.exit(0)
+        
+    def usage(self):
         sys.exit(0)
         
     def quit(self, signum, frame):
