@@ -12,6 +12,9 @@ import threading
 import datetime
 import re
 
+gport = 25 # Temporarly use a global variable to set port, 
+# until I work out how to pass as parameter
+
 class Helper:
     def validateEmail(self, email):
         pattern = re.compile('^<[a-z0-9._]+\@[a-z0-9]+\.[a-z.]{2,5}>', re.I)
@@ -102,9 +105,10 @@ class SMTPServerSW(threading.Thread):
         
     def listen(self, port=26):
         command = returned = ''
-        print('\nListening on port {0}...\n'.format(port))
+        global gport
+        print('\nListening on port {0}...\n'.format(gport))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(('', port))
+        s.bind(('', gport))
         s.listen(1)
         conn, addr = s.accept()
         while 1:
@@ -141,7 +145,8 @@ class SMTPServer:
             if o == '-h':
                 self.usage()
             elif o == '-p':
-                pass
+                global gport
+                gport = 26
                 
         print(__doc__)
         print('Use switch -h for help or -p to set port.')
