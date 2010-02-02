@@ -8,39 +8,109 @@ import sys
 import getopt
 import socket
 import signal
+import threading
 import datetime
 import re
-        
+
+gport = 26 # Temporarly use a global variable to set port, 
+# until I work out how to pass as parameter
+
+class Helper:
+    def validateEmail(self, email):
+        pattern = re.compile('^<[a-z0-9._]+\@[a-z0-9]+\.[a-z.]{2,5}>', re.I)
+        if re.match(pattern, email): r = True
+        else: r = False
+        return r
+
 class SMTPCommand:
-    def helo(self):
-        # ...
-        return '250 OK\r\n'
+    def helo(self, host=''):
+        #...
+        if host == '':
+            r = '501 HELO/EHLO requires a domain address\r\n'
+        else:
+            r = '250 Hello, {0}. Have a message to send?\r\n'.format(host)
+        return r
+        
+    def mailfrom(self, sender=''):
+        #...
+        if sender == '':
+            r = '501 MAIL FROM: requires a sender address\r\n'
+        elif Helper().validateEmail(sender):
+            r = '250 {0}... Sender OK\r\n'.format(sender)
+        else:
+            r = '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(sender)
+        return r
+        
+    def rcptto(self, to=''):
+        #...
+        if to == '':
+            r = '501 RCPT TO: requires a recipient address\r\n'
+        elif Helper().validateEmail(to):
+            r = '250 {0}... Recipient OK\r\n'.format(to)
+        else:
+            r = '553 \'{0}\' does not conform to RFC 2812 syntax.\r\n'.format(to)
+        return r
+        
+    def data(self):
+        pass
+    
+    def help(self):
+        pass
+        
+    def rset(self):
+        pass
         
     def quit(self):
+        return SMTPServerSW().ExitMsg
+        
+    def unknown(self, command):
+        return '550 Unknown command: {0}\r\n'.format(command.upper())
+        
+class SMTPServerCW(threading.Thread):
+    def run(self):
         pass
         
-    def unrecognised(self):
-        pass
-
-class SMTPServer:
+class SMTPServerSW(threading.Thread):
     def __init__(self):
         self.Name = 'SMTP server'
         self.Vers = '0.1'
         self.Greeting = '{0} v{1}'.format(self.Name, self.Vers)
-        self.ExitMsg = 'Goodbye.\r\n'
-        self.state = 0 # Start in listen state (0)
-        print(__doc__)
+        self.ExitMsg = '221 Goodbye\r\n'
+        self.state = 0 # Start in waiting state (0)
+        threading.Thread.__init__(self)
+        
+    def run(self):
         self.listen()
         
-    def parseCommand(self, received):
-        command = '' #!
-        return 'blah' #!
+    def parseCommand(self, command):
+        r = param = ''
+        try:
+            patt_noparams = re.compile('^[A-Z]{4}\r\n', re.I)
+            patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z0-9._]*\:*\s*[<>a-z._@]*\r\n', re.I)
+            if re.match(patt_noparams, command):
+                command = command.strip('\r\n')
+                r = eval('SMTPCommand().{0}()'.format(command.lower()))
+            elif re.match(patt_w1param, command):
+                command = command.strip('\r\n')
+                if command.find(':') != -1:
+                    command, param = command.split(':')
+                    command = command.replace(' ', '')
+                else:
+                    command, param = command.split()
+                param = param.strip()
+                r = eval('SMTPCommand().{0}(\'{1}\')'.format(command.lower(), param.lower()))  
+            else:
+                r = SMTPCommand().unknown(command)             
+        except AttributeError:
+            r = SMTPCommand().unknown(command)
+        return r
         
-    def listen(self, port=26): # Change to port 25 later
-        received = returned = ''
-        print('Listening on port {0}...\n'.format(port))
+    def listen(self, port=26):
+        command = returned = ''
+        global gport
+        print('\nListening on port {0}...\n'.format(gport))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(('', port))
+        s.bind(('', gport))
         s.listen(1)
         conn, addr = s.accept()
         while 1:
@@ -51,15 +121,57 @@ class SMTPServer:
                 print('>> {0} connected.\n'.format(addr))
                 self.state = 1 # Shift to ready state (1)
             chunk = conn.recv(1024)
-            received += chunk
+            command += chunk
             # Wait for command termination characters (CR+LF) before continuing
-            if received.endswith('\r\n'):
-                print('>> {0}'.format(received))
-                returned = self.parseCommand(received)
-                print('<< {0}'.format(returned))
+            if command.endswith('\r\n'):
+                returned = self.parseCommand(command)
                 conn.send(returned)
-                received = ''
+                command = ''
             if not chunk or returned == self.ExitMsg: break
         conn.close()
-       
+        
+class SMTPServer:
+    def __init__(self):
+        self.control = 0 # Initiate server application run state (0)
+        
+        # Handle command line options
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], 'vp:')
+            for o, a in opts:
+                if o == '-v':
+                    self.displayInfo()
+                elif o == '-p':
+                    global gport
+                    gport = int(a)
+                    
+        except getopt.GetoptError, err:
+            print('\nError: {0}'.format(err))
+            self.displayUsage(True)
+            
+        except ValueError:
+            print('\nError: Port must be an integer value.')
+            self.displayUsage(True)
+                               
+        self.displayUsage(False)
+        print('\nHold Ctrl-C to terminate.')
+        SMTPServerSW().setDaemon(True) 
+        SMTPServerSW().start()
+        while self.control == 0:
+            signal.signal(signal.SIGINT, self.quit)
+            if self.control == 1: break
+        sys.exit(0)
+        
+    def displayUsage(self, exit):
+        print(__doc__)
+        print('Use switch -v for version information\nor -p <port> to set port.')
+        if exit: sys.exit(2)
+        
+    def displayInfo(self):
+        print(SMTPServerSW().Greeting)
+        sys.exit(0)
+        
+    def quit(self, signum, frame):
+        print('Server terminated.')
+        self.control = 1 # Change to application quit-ready state (1)
+    
 if __name__ == '__main__': SMTPServer()
