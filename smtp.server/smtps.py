@@ -60,7 +60,7 @@ class SMTPCommand:
         pass
         
     def quit(self):
-        return SMTPServer().ExitMsg
+        return RelayInfo().ExitMsg
         
     def unknown(self, command):
         return '550 Unknown command: {0}\r\n'.format(command.upper())
@@ -75,14 +75,28 @@ class ClientThread(threading.Thread):
         
     def run(self):
         self.handleClient()
+        #self.join() # ?
 
     def handleClient(self):
+        command = returned = ''
         global gclients
-        if self.state == 0 and gclients <= self.MAX_CLIENTS:
-            gclients += 1
-            date = datetime.datetime.now()
-            self.conn.send('220 {0} {1}\r\n'.format(RelayInfo().Greeting, date))
-            print('>> Client {0} connected. ({1}/{2}).'.format(self.addr, gclients, self.MAX_CLIENTS))
+        while True:
+            if self.state == 0 and gclients <= self.MAX_CLIENTS:
+                gclients += 1
+                date = datetime.datetime.now()
+                self.conn.send('220 {0} {1}\r\n'.format(RelayInfo().Greeting, date))
+                print('>> Client {0} connected. ({1}/{2}).'.format(self.addr, gclients, self.MAX_CLIENTS))
+                self.state = 1 # Shift to ready state (1)
+            chunk = self.conn.recv(1024)
+            command += chunk
+            # Wait for command termination characters (CR+LF) before continuing
+            if command.endswith('\r\n'):
+                returned = self.parseCommand(command)
+                self.conn.send(returned)
+                command = ''
+            if not chunk or returned == RelayInfo().ExitMsg: break
+        print threading.enumerate() #self.conn.close()
+        self.conn.close()
             
     def parseCommand(self, command):
         r = param = ''
@@ -96,7 +110,7 @@ class ClientThread(threading.Thread):
                 command = command.strip('\r\n')
                 if command.find(':') != -1:
                     command, param = command.split(':')
-                    command = command.replace('\s', '')
+                    command = command.replace(' ', '')
                 else:
                     command, param = command.split()
                 param = param.strip()
@@ -122,26 +136,10 @@ class ServerThread(threading.Thread):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('', self.port))
         s.listen(5)
-#        conn, addr = s.accept()
         while True:
             conn, addr = s.accept()
             ClientThread(conn, addr).start()
-#            if self.state == 0:
-#                date = datetime.datetime.now()
-#                # Relay connected information to client
-#                conn.send('220 {0} {1}\r\n'.format(self.Greeting, date))
-#                print('>> {0} connected.\n'.format(addr))
-#                self.state = 1 # Shift to ready state (1)
-#            chunk = conn.recv(1024)
-#            command += chunk
-#            # Wait for command termination characters (CR+LF) before continuing
-#            if command.endswith('\r\n'):
-#                returned = self.parseCommand(command)
-#                conn.send(returned)
-#                command = ''
-#            if not chunk or returned == self.ExitMsg: break
-#        conn.close()
-        
+
 class SMTPServer:
     def __init__(self):
         self.termsig = False
