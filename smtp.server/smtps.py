@@ -75,7 +75,6 @@ class ClientThread(threading.Thread):
         
     def run(self):
         self.handleClient()
-        #self.join() # ?
 
     def handleClient(self):
         command = returned = ''
