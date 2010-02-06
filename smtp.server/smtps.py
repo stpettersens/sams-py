@@ -12,6 +12,7 @@ import signal
 import threading
 import datetime
 import re
+import Queue
 import mod_sam # Non-PSL module; include with this code
 
 gclients = 0
