@@ -15,15 +15,15 @@ import re
 import Queue
 import mod_sam # Non-PSL module; include with this code
 
-clientPool = 0
-gclients = 0
+gclientPool = gclients = 0
         
-class RelayInfo:
+class Info:
     def __init__(self):
         self.Name = 'SMTP server'
         self.Vers = '0.1'
         self.Greeting = '{0} v{1} on {2} \'{3}\''.format(self.Name, self.Vers, sys.platform, os.name)
         self.ExitMsg = '221 Goodbye\r\n'
+        self.MAX_CONNECTIONS = 5
 
 class SMTPCommand:
     def helo(self, host=''):
@@ -62,7 +62,7 @@ class SMTPCommand:
         pass
         
     def quit(self):
-        return RelayInfo().ExitMsg
+        return Info().ExitMsg
         
     def unknown(self, command):
         return '550 Unknown command: {0}\r\n'.format(command.upper())
@@ -77,27 +77,26 @@ class ClientThread(threading.Thread):
 
     def handleClient(self):
         command = returned = ''
-        global gclients, clientPool
+        global gclients
         while True:
-            client = clientPool.get()
-            if client != None and self.state == 0: #and gclients <= self.MAX_CLIENTS:
-                gclients += 1
+            client = gclientPool.get()
+            if client != None and self.state == 0 and gclients <= Info().MAX_CONNECTIONS:
+                gclients += 1 # After connect, number of clients is one more
                 date = datetime.datetime.now()
-                client[0].send('220 {0} {1}\r\n'.format(RelayInfo().Greeting, date))
-                print('>> Client {0} connected. ({1}).'.format(client[1][0], gclients))#, self.MAX_CLIENTS)) / {2}
+                client[0].send('220 {0} {1}\r\n'.format(Info().Greeting, date))
+                print('>> Client {0} connected. ({1}/{2}).'.format(client[1][0], gclients, Info().MAX_CONNECTIONS))
                 self.state = 1 # Shift to ready state (1)
             while True:
                 chunk = client[0].recv(1024)
                 command += chunk
-            #print 'Got this far...'
-            # Wait for command termination characters (CR+LF) before continuing
+                # Wait for command termination characters (CR+LF) before continuing
                 if command.endswith('\r\n'):
                     returned = self.parseCommand(command)
                     client[0].send(returned)
                     command = ''
-                if not chunk or returned == RelayInfo().ExitMsg: break
-            print threading.enumerate() #self.conn.close()
+                if not chunk or returned == Info().ExitMsg: break
             client[0].close()
+            gclients -= 1 # After disconnect, number of connected clients is one less
             
     def parseCommand(self, command):
         r = param = ''
@@ -125,7 +124,6 @@ class ClientThread(threading.Thread):
 class ServerThread(threading.Thread):
     def __init__(self, port):
         self.port = port
-        self.MAX_CONNECTIONS = 5
         threading.Thread.__init__(self)
     
     def run(self):
@@ -137,12 +135,12 @@ class ServerThread(threading.Thread):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('', self.port))
         s.listen(5)
-        global clientPool
-        clientPool = Queue.Queue(0) # Create client pool
-        for x in xrange(self.MAX_CONNECTIONS):
+        global gclientPool
+        gclientPool = Queue.Queue(0) # Create client pool
+        for x in xrange(Info().MAX_CONNECTIONS):
             ClientThread().start()
         while True:
-            clientPool.put(s.accept())
+            gclientPool.put(s.accept())
 
 class SMTPServer:
     def __init__(self):
@@ -180,7 +178,7 @@ class SMTPServer:
         if exit: sys.exit(2)
         
     def displayInfo(self):
-        print(RelayInfo().Greeting)
+        print(Info().Greeting)
         sys.exit(0)
         
     def quit(self, signum, frame):
