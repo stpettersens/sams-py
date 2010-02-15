@@ -25,13 +25,20 @@ class Info:
         self.ExitMsg = '221 Goodbye\r\n'
         self.MAX_CONNECTIONS = 5
 
-class SMTPCommand:
+class SMTPCommand:        
+    def __init__(self, state):
+        self.state = state # Server state as relevant for executed command
+        
+    def invalidSeq(self):
+        return '5xx Invalid sequence of commands.\r\n'
+        
     def helo(self, host=''):
-        # TODO: Return message and the state (array) for each SMTP command
-        if host == '':
-            r = '501 HELO/EHLO requires a domain address\r\n'
+        # Return the state and message (tuple array) for each SMTP command
+        if host == '' and self.state == 1:
+            r = (1, '501 HELO/EHLO requires a domain address\r\n')
+        elif self.state != 1: r = (self.state, self.invalidSeq())
         else:
-            r = '250 Hello, {0}. Have a message to send?\r\n'.format(host)
+            r = (2, '250 Hello, {0}. Have a message to send?\r\n'.format(host))
         return r
         
     def mailfrom(self, sender=''):
@@ -62,7 +69,7 @@ class SMTPCommand:
         pass
         
     def quit(self):
-        return Info().ExitMsg
+        return (0, Info().ExitMsg)
         
     def unknown(self, command):
         return '550 Unknown command: {0}\r\n'.format(command.upper())
@@ -86,12 +93,12 @@ class ClientThread(threading.Thread):
                 client[0].send('220 {0} {1}\r\n'.format(Info().Greeting, date))
                 print('>> Client {0} connected. ({1}/{2}).'.format(client[1][0], gclients, Info().MAX_CONNECTIONS))
                 self.state = 1 # Shift to ready state (1)
-            while True:
+            while True and self.state > 0:
                 chunk = client[0].recv(1024)
                 command += chunk
                 # Wait for command termination characters (CR+LF) before continuing
                 if command.endswith('\r\n'):
-                    returned = self.parseCommand(command)
+                    self.state, returned = self.parseCommand(command)
                     client[0].send(returned)
                     command = ''
                 if not chunk or returned == Info().ExitMsg: break
@@ -105,7 +112,7 @@ class ClientThread(threading.Thread):
             patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z0-9._]*\:*\s*[<>a-z._@]*\r\n', re.I)
             if re.match(patt_noparams, command):
                 command = command.strip('\r\n')
-                r = eval('SMTPCommand().{0}()'.format(command.lower()))
+                r = eval('SMTPCommand({0}).{1}()'.format(self.state, command.lower()))
             elif re.match(patt_w1param, command):
                 command = command.strip('\r\n')
                 if command.find(':') != -1:
@@ -114,7 +121,7 @@ class ClientThread(threading.Thread):
                 else:
                     command, param = command.split()
                 param = param.strip()
-                r = eval('SMTPCommand().{0}(\'{1}\')'.format(command.lower(), param.lower()))  
+                r = eval('SMTPCommand({0}).{1}(\'{2}\')'.format(self.state, command.lower(), param.lower()))  
             else:
                 r = SMTPCommand().unknown(command)             
         except AttributeError:

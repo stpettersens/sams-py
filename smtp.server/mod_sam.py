@@ -13,15 +13,28 @@ import re
 
 class Email:
     """
-    Functions for Email related tasks
+    Class for Email related tasks
     """
+    def __init__(self):
+        self.pattern = '[a-z0-9._]+\@[a-z0-9]+\.[a-z.]{2,5}'
+        
+    def validate(self, email):
+        """
+        Validate an e-mail address
+        Return True or False
+        """
+        pattern = re.compile(self.pattern, re.I)
+        if re.match(pattern, email): r = True
+        else: r = False
+        return r
+        
+        
     def validateRFC(self, email):
         """
         Validate an e-mail address within <brackets>,
         the format conforming to RFC 2812.
         Return True or False
         """
-        pattern = re.compile('^<[a-z0-9._]+\@[a-z0-9]+\.[a-z.]{2,5}>', re.I)
-        if re.match(pattern, email): r = True
-        else: r = False
+        self.pattern = '<' + self.pattern + '>'
+        r = self.validate(email)
         return r
