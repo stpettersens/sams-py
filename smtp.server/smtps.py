@@ -30,7 +30,7 @@ class SMTPCommand:
         self.state = state # Server state as relevant for executed command
         
     def invalidSeq(self):
-        return '5xx Invalid sequence of commands.\r\n'
+        return '503 Invalid sequence of commands.\r\n'
         
     def helo(self, host=''):
         # Return the state and message (tuple array) for each SMTP command
@@ -42,25 +42,30 @@ class SMTPCommand:
         return r
         
     def mailfrom(self, sender=''):
-        if sender == '':
-            r = '501 MAIL FROM: requires a sender address\r\n'
-        elif mod_sam.Email().validateRFC(sender):
-            r = '250 {0}... Sender OK\r\n'.format(sender)
+        if sender == '' and self.state == 2:
+            r = (2, '501 MAIL FROM: requires a sender address\r\n')
+        elif self.state != 2: r = (self.state, self.invalidSeq())
+        elif mod_sam.Email().validateRFC(sender) and self.state == 2:
+            r = (3, '250 {0}... Sender OK\r\n'.format(sender))
         else:
             r = '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(sender)
         return r
         
     def rcptto(self, to=''):
-        if to == '':
-            r = '501 RCPT TO: requires a recipient address\r\n'
-        elif mod_sam.Email().validateRFC(to):
-            r = '250 {0}... Recipient OK\r\n'.format(to)
+        if to == '' and self.state == 3:
+            r = (3, '501 RCPT TO: requires a recipient address\r\n')
+        elif self.state != 3: r = (self.state, self.invalidSeq())
+        elif mod_sam.Email().validateRFC(to) and self.state == 3:
+            r = (4, '250 {0}... Recipient OK\r\n'.format(to))
         else:
             r = '553 \'{0}\' does not conform to RFC 2812 syntax.\r\n'.format(to)
         return r
         
-    def data(self):
-        pass
+    def data(self, msgbody):
+        if msgbody == '' and self.state == 4:
+            r = (4, '501 DATA: requires a message body\r\n')
+        elif self.state != 4: r = (self.state, self.invalidSeq())
+        return r
     
     def help(self):
         pass
@@ -72,7 +77,7 @@ class SMTPCommand:
         return (0, Info().ExitMsg)
         
     def unknown(self, command):
-        return '550 Unknown command: {0}\r\n'.format(command.upper())
+        return (self.state, '550 Unknown command: {0}\r\n'.format(command.upper()))
         
 class ClientThread(threading.Thread):
     def __init__(self):
@@ -93,7 +98,7 @@ class ClientThread(threading.Thread):
                 client[0].send('220 {0} {1}\r\n'.format(Info().Greeting, date))
                 print('>> Client {0} connected. ({1}/{2}).'.format(client[1][0], gclients, Info().MAX_CONNECTIONS))
                 self.state = 1 # Shift to ready state (1)
-            while True and self.state > 0:
+            while True and self.state >= 1:
                 chunk = client[0].recv(1024)
                 command += chunk
                 # Wait for command termination characters (CR+LF) before continuing
@@ -123,9 +128,9 @@ class ClientThread(threading.Thread):
                 param = param.strip()
                 r = eval('SMTPCommand({0}).{1}(\'{2}\')'.format(self.state, command.lower(), param.lower()))  
             else:
-                r = SMTPCommand().unknown(command)             
+                r = SMTPCommand(self.state).unknown(command)             
         except AttributeError:
-            r = SMTPCommand().unknown(command)
+            r = SMTPCommand(self.state).unknown(command)
         return r
         
 class ServerThread(threading.Thread):
