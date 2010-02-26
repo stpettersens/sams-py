@@ -1,3 +1,4 @@
+#!/bin/env python
 """
 Simple Mail Transport Protocol (SMTP) server
 Copyright (c) 2010 Sam Saint-Pettersen
