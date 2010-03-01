@@ -195,7 +195,7 @@ class SMTPServer:
         sys.exit(0)
         
     def quit(self, signum, frame):
-        print('Server terminated.')
+        print('\nServer terminated.\n')
         self.termsig = True
     
 if __name__ == '__main__': SMTPServer()
