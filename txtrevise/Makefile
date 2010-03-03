@@ -11,15 +11,13 @@
 TARGET = txtrevise
 INSTALL_DIR_U = /usr/bin 
 INSTALL_DIR_W = /c/dev/bin
-FREEZE = /usr/lib/python2.6/freeze/freeze.py
+FREEZE = /usr/bin/freeze.sh # Shell script for Freeze
 
 make: 
-	@echo
 	@echo make py2exe - build + install py2exe executable
 	@echo make freeze - build + install Freeze Unix exectuable
 
 py2exe: create_exe.py ${TARGET}.py
-	@echo
 	@echo Building executable for Win...
 	python create_exe.py py2exe
 	rm -r build
@@ -33,8 +31,16 @@ py2exe: create_exe.py ${TARGET}.py
 	
 freeze: ${TARGET}.py
 	cp Makefile Makefile.1
-	@echo
 	@echo Building executable for Unix-like...
 	${FREEZE} ${TARGET}.py
+	make
+	rm Makefile
+	rm *.c
+	rm *.o
+	mv Makefile.1 Makefile
+	mv ${TARGET} t
+	upx -9 -o ${TARGET} t
+	rm t
 	@echo Installing executable...
-	
+	mv ${TARGET} ${INSTALL_DIR_U}
+
