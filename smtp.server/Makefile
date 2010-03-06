@@ -1,24 +1,24 @@
 # ===
-# Makefile for txtrevise
+# Makefile for smtps
 # ===
 # Requirements to build:
 # * Make
 # * Python
-# * Py2exe (Win) or Freeze (Unix)
+# * Py2exe and create_exe.py (Win) or Freeze (Unix)
 # * MSYS (Win)
 # * UPX
 
-TARGET = txtrevise
+TARGET = smtps
 INSTALL_DIR_U = /usr/bin 
 INSTALL_DIR_W = /c/dev/bin
 FREEZE = /usr/bin/freeze.sh # Shell script for Freeze
 
 make: 
-	@echo Build ${TARGET} program
+	@echo Build ${TARGET} program 
 	@echo make py2exe - build + install py2exe executable
 	@echo make freeze - build + install Freeze Unix exectuable
 
-py2exe: create_exe.py ${TARGET}.py
+py2exe: ${TARGET}.py
 	@echo Building executable for Win...
 	python create_exe.py py2exe
 	rm -r build
