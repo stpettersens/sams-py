@@ -62,10 +62,9 @@ class SMTPCommand:
             r = '553 \'{0}\' does not conform to RFC 2812 syntax.\r\n'.format(to)
         return r
         
-    def data(self, msgbody):
+    def data(self, msgbody=''):
         if msgbody == '' and self.state == 4:
-            r = (4, '501 DATA: requires a message body\r\n')
-        elif self.state != 4: r = (self.state, self.invalidSeq())
+			r = (5, '354 Start mail input; end with "."\r\n')
         return r
     
     def help(self):
@@ -104,9 +103,10 @@ class ClientThread(threading.Thread):
                 command += chunk
                 # Wait for command termination characters (CR+LF) before continuing
                 if command.endswith('\r\n'):
-                    self.state, returned = self.parseCommand(command)
-                    client[0].send(returned)
-                    command = ''
+					if self.state != 6: self.state, returned = self.parseCommand(command)
+					else: self.state, returned = self.parseMsgData(command)
+					client[0].send(returned)
+					command = ''
                 if not chunk or returned == Info().ExitMsg: break
             client[0].close()
             gclients -= 1 # After disconnect, number of connected clients is one less
@@ -133,6 +133,10 @@ class ClientThread(threading.Thread):
         except AttributeError:
             r = SMTPCommand(self.state).unknown(command)
         return r
+
+	def parseMsgData(self, msgdata):
+		return eval('SMTPCommand({0}).data({1})'.format(self.state, msgdata))
+	
         
 class ServerThread(threading.Thread):
     def __init__(self, port):
