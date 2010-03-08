@@ -29,9 +29,10 @@ class Info:
 class SMTPCommand:        
     def __init__(self, state):
         self.state = state # Server state as relevant for executed command
+        self.msgdata = '' # Message data is initially blank
         
     def invalidSeq(self):
-        return '503 Invalid sequence of commands.\r\n'
+        return (self.state, '503 Invalid sequence of commands.\r\n')
         
     def helo(self, host=''):
         # Return the state and message (tuple array) for each SMTP command
@@ -49,7 +50,7 @@ class SMTPCommand:
         elif mod_sam.Email().validateRFC(sender) and self.state == 2:
             r = (3, '250 {0}... Sender OK\r\n'.format(sender))
         else:
-            r = '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(sender)
+            r = (2, '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(sender))
         return r
         
     def rcptto(self, to=''):
@@ -59,12 +60,19 @@ class SMTPCommand:
         elif mod_sam.Email().validateRFC(to) and self.state == 3:
             r = (4, '250 {0}... Recipient OK\r\n'.format(to))
         else:
-            r = '553 \'{0}\' does not conform to RFC 2812 syntax.\r\n'.format(to)
+            r = (3, '553 \'{0}\' does not conform to RFC 2812 syntax.\r\n'.format(to))
         return r
-        
+    
     def data(self, msgbody=''):
+        patt = re.compile('^\.', re.I)
         if msgbody == '' and self.state == 4:
-			r = (5, '354 Start mail input; end with "."\r\n')
+            r = (5, '354 Ready for message data; terminate with \'.\'\r\n')
+        elif self.state < 4: r = (self.state, self.invalidSeq())
+        elif self.state == 5 and re.match(patt, msgbody):
+            r = (6, '250 Message body OK\r\n')
+        elif self.state == 5 and re.match(patt, msgbody) == False:
+            self.msgdata += msgbody
+            r = (5, '{0}\r\n'.format(msgbody))
         return r
     
     def help(self):
@@ -103,8 +111,7 @@ class ClientThread(threading.Thread):
                 command += chunk
                 # Wait for command termination characters (CR+LF) before continuing
                 if command.endswith('\r\n'):
-					if self.state != 6: self.state, returned = self.parseCommand(command)
-					else: self.state, returned = self.parseMsgData(command)
+					self.state, returned = self.parseCommand(command)
 					client[0].send(returned)
 					command = ''
                 if not chunk or returned == Info().ExitMsg: break
@@ -134,10 +141,6 @@ class ClientThread(threading.Thread):
             r = SMTPCommand(self.state).unknown(command)
         return r
 
-	def parseMsgData(self, msgdata):
-		return eval('SMTPCommand({0}).data({1})'.format(self.state, msgdata))
-	
-        
 class ServerThread(threading.Thread):
     def __init__(self, port):
         self.port = port
