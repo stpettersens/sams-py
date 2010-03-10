@@ -16,7 +16,8 @@ import re
 import Queue
 import mod_sam # Non-PSL module; include with this code
 
-gclientPool = gclients = 0
+gclientPool = 0
+gclients = 0
         
 class Info:
     def __init__(self):
