@@ -33,7 +33,7 @@ class SMTPCommand:
         self.msgdata = '' # Message data is initially blank
         
     def invalidSeq(self):
-        return (self.state, '503 Invalid sequence of commands.\r\n')
+        return '503 Invalid sequence of commands.\r\n'
         
     def helo(self, host=''):
         # Return the state and message (tuple array) for each SMTP command
@@ -63,19 +63,19 @@ class SMTPCommand:
         else:
             r = (3, '553 \'{0}\' does not conform to RFC 2812 syntax.\r\n'.format(to))
         return r
-    
-    def data(self, msgbody=''):
+        
+    def data(self, data=''):
         patt = re.compile('^\.', re.I)
-        if msgbody == '' and self.state == 4:
+        if data == '' and self.state == 4:
             r = (5, '354 Ready for message data; terminate with \'.\'\r\n')
-        elif self.state < 4: r = (self.state, self.invalidSeq())
-        elif self.state == 5 and re.match(patt, msgbody):
+        elif self.state == 5 and re.match(patt, data):
             r = (6, '250 Message body OK\r\n')
-        elif self.state == 5 and re.match(patt, msgbody) == False:
-            self.msgdata += msgbody
-            r = (5, '{0}\r\n'.format(msgbody))
+        elif self.state < 4 or self.state > 5: r = (self.state, self.invalidSeq())
+        else:
+            self.msgdata += data
+            r = (5, '...\r\n')
         return r
-    
+        
     def help(self):
         pass
         
@@ -103,8 +103,7 @@ class ClientThread(threading.Thread):
             client = gclientPool.get()
             if client != None and self.state == 0 and gclients <= Info().MAX_CONNECTIONS:
                 gclients += 1 # After connect, number of clients is one more
-                date = datetime.datetime.now()
-                client[0].send('220 {0} {1}\r\n'.format(Info().Greeting, date))
+                client[0].send('220 {0} {1}\r\n'.format(Info().Greeting, datetime.datetime.now()))
                 print('>> Client {0} connected. ({1}/{2}).'.format(client[1][0], gclients, Info().MAX_CONNECTIONS))
                 self.state = 1 # Shift to ready state (1)
             while True and self.state >= 1:
@@ -124,7 +123,9 @@ class ClientThread(threading.Thread):
         try:
             patt_noparams = re.compile('^[A-Z]{4}\r\n', re.I)
             patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z0-9._]*\:*\s*[<>a-z._@]*\r\n', re.I)
-            if re.match(patt_noparams, command):
+            if self.state == 5:
+                r = SMTPCommand(5).data(command)
+            elif re.match(patt_noparams, command):
                 command = command.strip('\r\n')
                 r = eval('SMTPCommand({0}).{1}()'.format(self.state, command.lower()))
             elif re.match(patt_w1param, command):
@@ -135,13 +136,14 @@ class ClientThread(threading.Thread):
                 else:
                     command, param = command.split()
                 param = param.strip()
-                r = eval('SMTPCommand({0}).{1}(\'{2}\')'.format(self.state, command.lower(), param.lower()))  
+                r = eval('SMTPCommand({0}).{1}(\'{2}\')'.format(self.state, command.lower(), param.lower()))
+            
             else:
-                r = SMTPCommand(self.state).unknown(command)             
+                r = SMTPCommand(self.state).unknown(command)
         except AttributeError:
             r = SMTPCommand(self.state).unknown(command)
         return r
-
+        
 class ServerThread(threading.Thread):
     def __init__(self, port):
         self.port = port
