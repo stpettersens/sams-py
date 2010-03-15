@@ -115,7 +115,7 @@ class ClientThread(threading.Thread):
                 # Wait for command termination characters (CR+LF) before continuing
                 if command.endswith('\r\n'):
 					self.state, returned = self.parseCommand(command)
-					client[0].send(returned)
+					client[0].send(str(returned)) # str
 					command = ''
                 if not chunk or returned == Info().ExitMsg: break
             client[0].close()
