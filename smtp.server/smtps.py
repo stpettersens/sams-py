@@ -128,7 +128,7 @@ class ClientThread(threading.Thread):
         r = param = ''
         try:
             patt_noparams = re.compile('^[A-Z]{4}\r\n', re.I)
-            patt_w1param = re.compile('^[A-Z]{4}\s*[A-Z0-9._]*\:*\s*[<>a-z._@]*\r\n', re.I)
+            patt_w1param = re.compile('^[A-Z]{4}\s*[\[\]A-Z0-9._]*\:*\s*[<>a-z0-9._@]*\r\n', re.I)
             if self.state == 5:
                 r = SMTPCommand(5).data(command)
             elif re.match(patt_noparams, command):
