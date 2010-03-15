@@ -43,7 +43,10 @@ class SMTPCommand:
         else:
             r = (2, '250 Hello, {0}. Have a message to send?\r\n'.format(host))
         return r
-        
+	
+	def ehlo(self, host=''):
+		return self.helo(host)
+
     def mailfrom(self, sender=''):
         if sender == '' and self.state == 2:
             r = (2, '501 MAIL FROM: requires a sender address\r\n')
