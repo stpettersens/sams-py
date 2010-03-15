@@ -16,6 +16,7 @@ import re
 import Queue
 import mod_sam # Non-PSL module; include with this code
 
+gdebug = False
 gclientPool = 0
 gclients = 0
         
@@ -112,10 +113,12 @@ class ClientThread(threading.Thread):
             while True and self.state >= 1:
                 chunk = client[0].recv(1024)
                 command += chunk
+                if(gdebug): print('<<< {0}'.format(command)) # Debug: Received from client
                 # Wait for command termination characters (CR+LF) before continuing
                 if command.endswith('\r\n'):
 					self.state, returned = self.parseCommand(command)
-					client[0].send(str(returned)) # str
+					client[0].send(str(returned)) # Convert to string from tuple to not return internal state code
+					if(gdebug): print('>>> {0}'.format(returned)) # debug OUT
 					command = ''
                 if not chunk or returned == Info().ExitMsg: break
             client[0].close()
@@ -175,12 +178,14 @@ class SMTPServer:
                 
         # Handle command line options
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'vp:')
+            opts, args = getopt.getopt(sys.argv[1:], 'vp:d')
             for o, a in opts:
                 if o == '-v':
                     self.displayInfo()
                 elif o == '-p':
                     self.port = int(a)
+                elif o == '-d':
+                    gdebug = True
                     
         except getopt.GetoptError, err:
             print('\nError: {0}'.format(err))   
