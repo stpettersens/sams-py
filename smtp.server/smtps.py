@@ -108,17 +108,17 @@ class ClientThread(threading.Thread):
             if client != None and self.state == 0 and gclients <= Info().MAX_CONNECTIONS:
                 gclients += 1 # After connect, number of clients is one more
                 client[0].send('220 {0} {1}\r\n'.format(Info().Greeting, datetime.datetime.now()))
-                print('>> Client {0} connected. ({1}/{2}).'.format(client[1][0], gclients, Info().MAX_CONNECTIONS))
+                print('^ Client {0} connected. ({1}/{2}).'.format(client[1][0], gclients, Info().MAX_CONNECTIONS))
                 self.state = 1 # Shift to ready state (1)
             while True and self.state >= 1:
                 chunk = client[0].recv(1024)
                 command += chunk
-                if(gdebug): print('<<< {0}'.format(command)) # Debug: Received from client
                 # Wait for command termination characters (CR+LF) before continuing
                 if command.endswith('\r\n'):
 					self.state, returned = self.parseCommand(command)
 					client[0].send(str(returned)) # Convert to string from tuple to not return internal state code
-					if(gdebug): print('>>> {0}'.format(returned)) # debug OUT
+					print('\n<<< {0}'.format(command)) # Debug: Received from  and response to client
+					print('\n>>> {0}'.format(returned))
 					command = ''
                 if not chunk or returned == Info().ExitMsg: break
             client[0].close()
