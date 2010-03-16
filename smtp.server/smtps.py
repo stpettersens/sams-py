@@ -194,7 +194,7 @@ class SMTPServer:
             self.displayUsage(True)
             
         except ValueError:
-            print('\nError: Port must be an integer value, not \'{0S}\'.'.format(a))
+            print('\nError: Port must be an integer value, not \'{0}\'.'.format(a))
             self.displayUsage(True)
                                
         self.displayUsage(False)
@@ -212,11 +212,11 @@ class SMTPServer:
         
     def displayCmdLineOps(self):
         print(__doc__)
-        print('Usage: {0} [-h][-v][-d -p <port number>]'.format(sys.argv[0]))
-        print('\n-h: Display this information and exit.')
+        print('Usage: {0} [-h][-v][-d -p <port number>]\n'.format(sys.argv[0]))
+        print('-h: Display this information and exit.')
         print('-v: Display version information and exit.')
         print('-d: Display debug information while running.')
-        print('-p: Listen on specified port number. (Default: 25)')
+        print('-p: Listen on specified port number. (Default: 25)\n')
         sys.exit(2)
         
     def displayInfo(self):
