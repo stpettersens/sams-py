@@ -69,15 +69,12 @@ class SMTPCommand:
         return r
         
     def data(self, data=''):
-        patt = re.compile('^\.', re.I)
         if data == '' and self.state == 4:
             r = (5, '354 Ready for message data; terminate with \'.\'\r\n')
-        elif self.state == 5 and re.match(patt, data):
-            r = (6, '250 Message body OK\r\n')
         elif self.state < 4 or self.state > 5: r = (self.state, self.invalidSeq())
         else:
             self.msgdata += data
-            r = (5, '...\r\n')
+            r = (6, '250 Message body OK\r\n')
         return r
         
     def help(self):
@@ -117,8 +114,10 @@ class ClientThread(threading.Thread):
                 if command.endswith('\r\n'):
 					self.state, returned = self.parseCommand(command)
 					client[0].send(str(returned)) # Convert to string from tuple to not return internal state code
-					print('\n<<< {0}'.format(command)) # Debug: Received from  and response to client
-					print('\n>>> {0}'.format(returned))
+					# Debug: Received from  and response to client
+					if gdebug:
+					    print('\n<<< {0}'.format(command))
+					    print('\n>>> {0}'.format(returned))
 					command = ''
                 if not chunk or returned == Info().ExitMsg: break
             client[0].close()
@@ -178,13 +177,16 @@ class SMTPServer:
                 
         # Handle command line options
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'vp:d')
+            opts, args = getopt.getopt(sys.argv[1:], 'vp:hd')
             for o, a in opts:
                 if o == '-v':
                     self.displayInfo()
                 elif o == '-p':
                     self.port = int(a)
+                elif o == '-h':
+                    self.displayCmdLineOps()
                 elif o == '-d':
+                    global gdebug
                     gdebug = True
                     
         except getopt.GetoptError, err:
@@ -192,7 +194,7 @@ class SMTPServer:
             self.displayUsage(True)
             
         except ValueError:
-            print('\nError: Port must be an integer value, not \'{0}\'.'.format(a))
+            print('\nError: Port must be an integer value, not \'{0S}\'.'.format(a))
             self.displayUsage(True)
                                
         self.displayUsage(False)
@@ -205,8 +207,17 @@ class SMTPServer:
         
     def displayUsage(self, exit):
         print(__doc__)
-        print('Use switch -v for version information\nor -p <port> to set port.')
+        print('Use switch -h for usage information.')
         if exit: sys.exit(2)
+        
+    def displayCmdLineOps(self):
+        print(__doc__)
+        print('Usage: {0} [-h][-v][-d -p <port number>]'.format(sys.argv[0]))
+        print('\n-h: Display this information and exit.')
+        print('-v: Display version information and exit.')
+        print('-d: Display debug information while running.')
+        print('-p: Listen on specified port number. (Default: 25)')
+        sys.exit(2)
         
     def displayInfo(self):
         print(Info().Greeting)
