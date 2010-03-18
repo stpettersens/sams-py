@@ -61,15 +61,17 @@ class SMTPCommand:
     def rcptto(self, to=''):
         if to == '' and self.state < 5:
             r = (self.state, '501 RCPT TO: requires a recipient address\r\n')
-        elif self.state != 3: r = (self.state, self.invalidSeq())
+        elif self.state < 3 or self.state > 5: r = (self.state, self.invalidSeq())
         elif mod_sam.Email().validateRFC(to) and self.state < 5:
-			if self.state == 3: 
-				substate = self.state =+ 1.1
+			if self.state == 3:
+				substate = self.state + 1.1
+				print('substateA: ' + str(substate))
 			else: 
-				substate += 0.1
+				substate = self.state + 0.1
+				print('substateB: ' + str(substate))
 			r = (substate, '250 {0}... Recipient OK\r\n'.format(to))
         else:
-            r = (self.state, '553 \'{0}\' does not conform to RFC 2812 syntax.\r\n'.format(to))
+            r = (self.state, '553 \'{0}\' does not conform to RFC 2812 syntax.\r\n'.ftrormat(to))
         return r
         
     def data(self, data=''):
