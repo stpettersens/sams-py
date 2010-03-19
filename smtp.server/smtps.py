@@ -179,7 +179,7 @@ class ServerThread(threading.Thread):
 class SMTPServer:
     def __init__(self):
         self.termsig = False
-        self.port = 25
+        self.port = 25 # Port number to default to
                 
         # Handle command line options
         try:
