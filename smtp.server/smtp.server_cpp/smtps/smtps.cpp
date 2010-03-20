@@ -56,8 +56,6 @@ int main(int argc, char *argv[]) {
             case 'd':
                 gDebug = true;
                 break;
-			case '?':
-				break;
         }
     }
     displayHeader();
