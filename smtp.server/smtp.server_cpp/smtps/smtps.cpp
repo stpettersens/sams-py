@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	catch(int ex) {
-		cout << "Error: Port must be a positive integer value, not \'" 
+		cout << argv[0] << ": port must be a positive integer value, not \'" 
 		<< pvalue << "\'.\n";
 		displayUsage();
 	}
