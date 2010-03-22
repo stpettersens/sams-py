@@ -183,7 +183,7 @@ class SMTPServer:
                 
         # Handle command line options
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'vp:hd')
+            opts, args = getopt.getopt(sys.argv[1:], 'p:vhd')
             for o, a in opts:
                 if o == '-v':
                     self.displayInfo()
@@ -200,7 +200,7 @@ class SMTPServer:
             self.displayUsage(True)
             
         except ValueError:
-            print('\nError: Port must be an integer value, not \'{0}\'.'.format(a))
+            print('\nError: Port must be a positive integer value, not \'{0}\'.'.format(a))
             self.displayUsage(True)
                                
         self.displayUsage(False)
