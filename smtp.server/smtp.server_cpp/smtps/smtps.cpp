@@ -7,18 +7,19 @@
 
 	This program uses the following
 	third party libraries (as licensed):
+	* Boost.System
 	* Boost.Asio (Boost License)
 	* Boost.DateTime
 	* Boost.Regex
-	* Boost.System
-	* Boost.Threading
+	* Boost.Thread
 	* Getopt (Public domain)
 */
 #include <iostream>
 #include <cstdlib>
-#include <string>
 #include "getopt.h"
-//#include "boost/asio.hpp"
+#include "boost/asio.hpp"
+#include "boost/regex.hpp"
+#include "boost/thread.hpp"
 #include "boost/version.hpp"
 using namespace std;
 
@@ -33,18 +34,46 @@ void displayVersion();
 void displayUsage();
 
 class SMTPCommand {
-
+private:
+	float state;
+	char *msgdata;
+public:
+	SMTPCommand(float st) {
+		// Server state as relevant for executed command
+		state = st;
+		// Message data is intially blank
+		msgdata = " ";
+	}
+private:
+	char *invalidSeq(void) {
+		return strcat("1", "|503 Invalid sequence of commands.\r\n");
+	}
+	char *helo(char *host) {
+		char *r;
+		if(host == " " && state == 1.0) {
+			r = "1.0|501 HELO/ELHO requires a domain address.\r\n";
+		}
+		else if(state != 1) r = invalidSeq();
+		else r = "2.0|250 Hello.\r\n";
+		return r;
+	}
+	char *ehlo(char *host) {
+		return helo(host);
+	}
 };
 
 class SMTPServer {
 private:
-	const string Name;
-	const string Version;
-	const string Greeting;
-	const string ExitMsg;
-	const int MaxConnections;
+	char *name;
+	char *version;
+	char *greeting;
+	char *exitMsg;
+	char *maxConnections;
 	float state;
 public:
+	SMTPServer() {
+		state = 0;
+	}
 	float incrState() {
 		state++;
 		return state;
@@ -83,7 +112,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	catch(int ex) {
-		cout << argv[0] << ": port must be a positive integer value, not \'" 
+		cout << argv[0] << ": port must be a +ve integer value, not \'" 
 		<< pvalue << "\'.\n";
 		displayUsage();
 	}
@@ -98,8 +127,8 @@ void displayHeader() {
     cout << "\n\nReleased under the MIT License\n";
 }
 void displayVersion() {
-	cout << "SMTP version 1.0 (" << COMPILER
-	<< ") using Boost " << BOOST_LIB_VERSION << "\n";
+	cout << "SMTP version 1.0\nCompiled with " << COMPILER
+	<< " using Boost " << BOOST_LIB_VERSION << "\n";
 	exit(2);
 }
 void displayUsage() {
