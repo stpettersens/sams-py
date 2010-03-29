@@ -13,7 +13,7 @@ TARGET = smtps
 INCL_W = -I"C:\Dev\boost_1_42_0"
 LIBS_W = -L"C:\Program Files\Microsoft SDKs\Windows\v6.0A\Lib" \
 -L"C:\Dev\boost_1_42_0\stage\lib" -llibboost_system-mgw34-mt \
--llibboost_regex-mgw34-mt -lws2_32
+-llibboost_regex-mgw34-mt -llibboost_thread-mgw34-mt -lws2_32
 
 INCL_U = -I"/usr/include/boost_1_42_0"
 LIBS_U = -L"/usr/lib/boost_1_42_02" -llibboost_system-gcc-mt-sd-1_42

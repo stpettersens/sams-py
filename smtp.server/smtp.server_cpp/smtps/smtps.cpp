@@ -32,33 +32,75 @@ int gClients = 0;
 void displayHeader();
 void displayVersion();
 void displayUsage();
+void listening();
 
 class SMTPCommand {
 private:
-	float state;
-	char *msgdata;
+	float state; // FSM state in command
+	char *msgdata; // Message data
+	char *r; // Response from executed command
 public:
-	SMTPCommand(float st) {
+	SMTPCommand(float st) { 
 		// Server state as relevant for executed command
 		state = st;
 		// Message data is intially blank
-		msgdata = " ";
+		msgdata = NULL; //!
 	}
-private:
 	char *invalidSeq(void) {
-		return strcat("1", "|503 Invalid sequence of commands.\r\n");
+		sprintf(r, "%1.1f|501 Invalid sequence of commands.\r\n.", state);
+		return r;
 	}
 	char *helo(char *host) {
-		char *r;
 		if(host == " " && state == 1.0) {
-			r = "1.0|501 HELO/ELHO requires a domain address.\r\n";
+			r = "1.0|501 HELO/ELHO requires a domain address\r\n";
 		}
-		else if(state != 1) r = invalidSeq();
-		else r = "2.0|250 Hello.\r\n";
+		else if(state != 1) {
+			r = invalidSeq();
+		}
+		else {
+			r = "2.0|250 Hello.\r\n";
+		}
 		return r;
 	}
 	char *ehlo(char *host) {
 		return helo(host);
+	}
+	char *mailfrom(char *sender) {
+		if(sender == NULL && state == 2.0) {
+			r = "2.0|501 MAIL FROM: requires a sender address\r\n";
+		}
+		else if(state == 2.0) {
+			r = invalidSeq();
+		}
+		//else if(Email.validateRFC(sender) && state == 2.0) {
+		//	sprintf(r, "3.0|250 %s... Sender OK\r\n", sender);
+		else {
+			sprintf(r, "2.0|553 %s does not conform to RFC 2812 syntax.\r\n", sender);
+		}
+		return r;
+	}
+	char *rcptto(char *to) {
+		if(to == NULL && state < 5.0) {
+			sprintf(r, "%1.1f|501 RCPT TO: requires a recipient address\r\n", state);
+		}
+		else if(state < 3 || state > 5) {
+			r = invalidSeq();
+		}
+		//else if(Email.validateRFC(to) && state < 5) {
+		//	if(state == 3) {
+		//		state += 1.1;
+		//		cout << "A!" << state; //!
+		//	}
+		//	else {
+		//		state += 0.1;
+		//		cout << "B!" << state; //!
+		//	}
+		//	sprintf(r, "%1.1f|250 %s... Recipient OK\r\n", state, to);
+		//}
+		else {
+			sprintf(r, "%1.1f|553 '%s' does not conform to RFC 2812 syntax\r\n", state, to);
+		}
+		return r;
 	}
 };
 
@@ -68,11 +110,15 @@ private:
 	char *version;
 	char *greeting;
 	char *exitMsg;
-	char *maxConnections;
+	int maxConnections;
 	float state;
 public:
 	SMTPServer() {
-		state = 0;
+		name = "SMTP server";
+		version = "0.1";
+		greeting = "Blah!";
+		maxConnections = 5;
+		state = 0.0;
 	}
 	float incrState() {
 		state++;
@@ -80,6 +126,9 @@ public:
 	}
 	float decrState() {
 		state--;
+		return state;
+	}
+	float returnState() {
 		return state;
 	}
 };
@@ -117,18 +166,21 @@ int main(int argc, char *argv[]) {
 		displayUsage();
 	}
 	displayHeader();
-    cout << "\nRunning on port " << port << "...\n";
+	listening();
 
     return 0;
 }
+void listening() {
+
+}
 void displayHeader() {
-    cout << "\nSimple Mail Transport Protocol (SMTP) server";
-    cout << "\nCopyright (c) 2010 Sam Saint-Pettersen";
-    cout << "\n\nReleased under the MIT License\n";
+    cout << "Simple Mail Transport Protocol (SMTP) server" << endl;
+    cout << "Copyright (c) 2010 Sam Saint-Pettersen" << endl;
+    cout << "\nReleased under the MIT License" << endl;
 }
 void displayVersion() {
 	cout << "SMTP version 1.0\nCompiled with " << COMPILER
-	<< " using Boost " << BOOST_LIB_VERSION << "\n";
+	<< " using Boost " << BOOST_LIB_VERSION << endl;
 	exit(2);
 }
 void displayUsage() {
