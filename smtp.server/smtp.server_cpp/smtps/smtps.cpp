@@ -7,8 +7,8 @@
 
 	This program uses the following
 	third party libraries (as licensed):
-	* Boost.System
 	* Boost.Asio (Boost License)
+	* Boost.System
 	* Boost.DateTime
 	* Boost.Regex
 	* Boost.Thread
@@ -17,22 +17,23 @@
 #include <iostream>
 #include <cstdlib>
 #include "getopt.h"
+#include "boost/bind.hpp"
 #include "boost/asio.hpp"
 #include "boost/regex.hpp"
 #include "boost/thread.hpp"
 #include "boost/version.hpp"
 using namespace std;
+using boost::asio::ip::tcp;
 
 #define COMPILER "gcc"
 
 bool gDebug = false;
-int gClientPool = 0;
-int gClients = 0;
+short gClientPool = 0;
+short gClients = 0;
 
 void displayHeader();
 void displayVersion();
 void displayUsage();
-void listening();
 
 class SMTPCommand {
 private:
@@ -41,12 +42,16 @@ private:
 	char *r; // Response from executed command
 public:
 	SMTPCommand(float st) { 
+		msgdata, r = new char; // Allocate memory for msgdata and response
 		// Server state as relevant for executed command
 		state = st;
 		// Message data is intially blank
 		msgdata = NULL; //!
 	}
-	char *invalidSeq(void) {
+	// Need destructor here...
+	///
+	///
+	char *invalidSeq() {
 		sprintf(r, "%1.1f|501 Invalid sequence of commands.\r\n.", state);
 		return r;
 	}
@@ -112,13 +117,14 @@ private:
 	char *exitMsg;
 	int maxConnections;
 	float state;
+	void start_accept() {
+
+	}
 public:
-	SMTPServer() {
-		name = "SMTP server";
-		version = "0.1";
-		greeting = "Blah!";
-		maxConnections = 5;
-		state = 0.0;
+	SMTPServer(boost::asio::io_service& io_service, int port)
+		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
+	{
+		start_accept();
 	}
 	float incrState() {
 		state++;
@@ -131,6 +137,7 @@ public:
 	float returnState() {
 		return state;
 	}
+	tcp::acceptor acceptor_;
 };
 
 int main(int argc, char *argv[]) {
@@ -161,20 +168,26 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	catch(int ex) {
-		cout << argv[0] << ": port must be a +ve integer value, not \'" 
-		<< pvalue << "\'.\n";
+		cerr << argv[0] << ": port must be a +ve integer value, not \'" 
+		<< pvalue << "\'." << endl;
 		displayUsage();
 	}
 	displayHeader();
-	listening();
+	try {
+		// Start SMTP server object on specified port
+		boost::asio::io_service io;
+		SMTPServer server(io, port);
+		io.run();
+		cout << "\nRunning on port " << port << "..." << endl;
+	}
+	catch(exception &e) {
+		cerr << e.what() << endl;
+	}
 
-    return 0;
-}
-void listening() {
-
+	return 0;
 }
 void displayHeader() {
-    cout << "Simple Mail Transport Protocol (SMTP) server" << endl;
+    cout << "\nSimple Mail Transport Protocol (SMTP) server" << endl;
     cout << "Copyright (c) 2010 Sam Saint-Pettersen" << endl;
     cout << "\nReleased under the MIT License" << endl;
 }
