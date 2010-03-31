@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include "getopt.h"
 #include "boost/bind.hpp"
+#include "boost/shared_ptr.hpp"
+#include "boost/enable_shared_from_this.hpp"
 #include "boost/asio.hpp"
 #include "boost/regex.hpp"
 #include "boost/thread.hpp"
@@ -28,12 +30,11 @@ using boost::asio::ip::tcp;
 #define COMPILER "gcc"
 
 bool gDebug = false;
-short gClientPool = 0;
-short gClients = 0;
 
 void displayHeader();
 void displayVersion();
 void displayUsage();
+bool validateEmail(char *emailAddress);
 
 class SMTPCommand {
 private:
@@ -77,8 +78,9 @@ public:
 		else if(state == 2.0) {
 			r = invalidSeq();
 		}
-		//else if(Email.validateRFC(sender) && state == 2.0) {
-		//	sprintf(r, "3.0|250 %s... Sender OK\r\n", sender);
+		else if(validateEmail(sender) && state == 2.0) {
+			sprintf(r, "3.0|250 %s... Sender OK\r\n", sender);
+		}
 		else {
 			sprintf(r, "2.0|553 %s does not conform to RFC 2812 syntax.\r\n", sender);
 		}
@@ -91,21 +93,66 @@ public:
 		else if(state < 3 || state > 5) {
 			r = invalidSeq();
 		}
-		//else if(Email.validateRFC(to) && state < 5) {
-		//	if(state == 3) {
-		//		state += 1.1;
-		//		cout << "A!" << state; //!
-		//	}
-		//	else {
-		//		state += 0.1;
-		//		cout << "B!" << state; //!
-		//	}
-		//	sprintf(r, "%1.1f|250 %s... Recipient OK\r\n", state, to);
-		//}
+		else if(validateEmail(to) && state < 5) {
+			if(state == 3) {
+				state += 1.1;
+				cout << "A!" << state; //!
+			}
+			else {
+				state += 0.1;
+				cout << "B!" << state; //!
+			}
+			sprintf(r, "%1.1f|250 %s... Recipient OK\r\n", 
+			state, to);
+		}
 		else {
-			sprintf(r, "%1.1f|553 '%s' does not conform to RFC 2812 syntax\r\n", state, to);
+			sprintf(r, "%1.1f|553 '%s' does not conform to RFC 2812 syntax\r\n", 
+			state, to);
 		}
 		return r;
+	}
+};
+
+class Session {
+private:
+	tcp::socket socket_;
+	enum { max_length = 1024 };
+	char data_[max_length];
+public:
+	Session(boost::asio::io_service& io_service)
+	: socket_(io_service) 
+	{
+	}
+	tcp::socket& socket() {
+		return socket_;
+	}
+	void start() {
+		socket_.async_read_some(boost::asio::buffer(data_, max_length),
+		boost::bind(&Session::handle_read, this, 
+		boost::asio::placeholders::error,
+		boost::asio::placeholders::bytes_transferred));
+	}
+	void handle_read(const boost::system::error_code &error, size_t bytes_transferred) {
+		if(!error) {
+			boost::asio::async_write(socket_,
+				boost::asio::buffer(data_, bytes_transferred),
+				boost::bind(&Session::handle_write, this, 
+				boost::asio::placeholders::error));
+		}
+		else {
+			delete this;
+		}
+	}
+	void handle_write(const boost::system::error_code& error) {
+		if(!error) {
+			socket_.async_read_some(boost::asio::buffer(data_, max_length),
+				boost::bind(&Session::handle_read, this, 
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+		}
+		else {
+			delete this;
+		}
 	}
 };
 
@@ -116,15 +163,36 @@ private:
 	char *greeting;
 	char *exitMsg;
 	int maxConnections;
+	int clientCount;
 	float state;
-	void start_accept() {
-
-	}
+	boost::asio::io_service& io_service_;
+	tcp::acceptor acceptor_;
 public:
-	SMTPServer(boost::asio::io_service& io_service, int port)
-		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
+	SMTPServer(boost::asio::io_service &io_service, int port)
+		: io_service_(io_service), 
+		acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
 	{
-		start_accept();
+
+		maxConnections = 5; // Set maximum number of connections allowed
+		clientCount = 0; // Intially there are no client connections
+		state = 0.0; // Set initial FSM state to 0.00
+
+		Session* new_session = new Session(io_service_);
+		acceptor_.async_accept(new_session->socket(),
+			boost::bind(&SMTPServer::handle_accept, this, new_session,
+			boost::asio::placeholders::error));
+	}
+	void handle_accept(Session* new_session, const boost::system::error_code &error) {
+		if(!error) {
+			new_session->start();
+			new_session = new Session(io_service_);
+			acceptor_.async_accept(new_session->socket(),
+				boost::bind(&SMTPServer::handle_accept, this, new_session,
+				boost::asio::placeholders::error));
+		}
+		else {
+			delete new_session;
+		}
 	}
 	float incrState() {
 		state++;
@@ -137,8 +205,12 @@ public:
 	float returnState() {
 		return state;
 	}
-	tcp::acceptor acceptor_;
 };
+
+bool validateEmail(char *emailAddress) {
+	char *pattern = new char;
+	return true;
+}
 
 int main(int argc, char *argv[]) {
     bool termSig = false;
@@ -175,13 +247,13 @@ int main(int argc, char *argv[]) {
 	displayHeader();
 	try {
 		// Start SMTP server object on specified port
-		boost::asio::io_service io;
-		SMTPServer server(io, port);
-		io.run();
 		cout << "\nRunning on port " << port << "..." << endl;
+		boost::asio::io_service io_service;
+		SMTPServer server(io_service, port);
+		io_service.run();
 	}
 	catch(exception &e) {
-		cerr << e.what() << endl;
+		cerr << "Exception: " << e.what() << endl;
 	}
 
 	return 0;

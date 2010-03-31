@@ -64,12 +64,10 @@ class SMTPCommand:
         elif self.state < 3 or self.state > 5: r = (self.state, self.invalidSeq())
         elif mod_sam.Email().validateRFC(to) and self.state < 5:
 			if self.state == 3:
-				substate = self.state + 1.1
-				print('substateA: ' + str(substate)) #!
+			    self.state += 1.1
 			else: 
-				substate = self.state + 0.1
-				print('substateB: ' + str(substate)) #!
-			r = (substate, '250 {0}... Recipient OK\r\n'.format(to))
+			    self.state += 0.1
+			r = (self.state, '250 {0}... Recipient OK\r\n'.format(to))
         else:
             r = (self.state, '553 \'{0}\' does not conform to RFC 2812 syntax\r\n'.format(to))
         return r
@@ -81,6 +79,12 @@ class SMTPCommand:
         else:
             self.msgdata += data
             r = (6, '250 Message body OK\r\n')
+            
+        # Write the e-mail to the log
+        log = open('.\mail.log', 'w')
+        log.write('\nMessage written at {0}\n'.format(datetime.datetime.now()) 
+        + self.msgdata);
+        log.close();
         return r
         
     def help(self):
@@ -147,8 +151,7 @@ class ClientThread(threading.Thread):
                 else:
                     command, param = command.split()
                 param = param.strip()
-                r = eval('SMTPCommand({0}).{1}(\'{2}\')'.format(self.state, command.lower(), param.lower()))
-            
+                r = eval('SMTPCommand({0}).{1}(\'{2}\')'.format(self.state, command.lower(), param.lower())) 
             else:
                 r = SMTPCommand(self.state).unknown(command)
         except AttributeError:
