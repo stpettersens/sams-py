@@ -27,7 +27,16 @@ class Info:
         self.Greeting = '{0} v{1} on {2} \'{3}\''.format(self.Name, self.Vers, sys.platform, os.name)
         self.ExitMsg = '221 Goodbye\r\n'
         self.MAX_CONNECTIONS = 5
-
+        
+class Mailer:
+    def __init__(self, msgdata):
+        self.msgdata = msgdata
+    def log(self):
+        timestamp = datetime.datetime.now()
+        log = open('mail.log', 'a')
+        log.write('\nMessage processed: {0}\n\n{1}\n'.format(timestamp, self.msgdata))
+        log.close()
+        
 class SMTPCommand:        
     def __init__(self, state):
         self.state = state # Server state as relevant for executed command
@@ -80,11 +89,7 @@ class SMTPCommand:
             self.msgdata += data
             r = (6, '250 Message body OK\r\n')
             
-        # Write the e-mail to the log
-        log = open('.\mail.log', 'w')
-        log.write('\nMessage written at {0}\n'.format(datetime.datetime.now()) 
-        + self.msgdata);
-        log.close();
+        Mailer(self.msgdata).log();
         return r
         
     def help(self):
