@@ -14,7 +14,7 @@ import threading
 import datetime
 import re
 import Queue
-import mod_sam # Non-PSL module; include with this code
+import helpers # Non-PSL module
 
 gdebug = False
 gclientPool = 0
@@ -61,7 +61,7 @@ class SMTPCommand:
         if sender == '' and self.state == 2:
             r = (2, '501 MAIL FROM: requires a sender address\r\n')
         elif self.state != 2: r = (self.state, self.invalidSeq())
-        elif mod_sam.Email().validateRFC(sender) and self.state == 2:
+        elif helpers.Email().validateRFC(sender) and self.state == 2:
             r = (3, '250 {0}... Sender OK\r\n'.format(sender))
         else:
             r = (2, '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(sender))
@@ -71,7 +71,7 @@ class SMTPCommand:
         if to == '' and self.state < 5.0:
             r = (self.state, '501 RCPT TO: requires a recipient address\r\n')
         elif self.state < 3 or self.state > 5: r = (self.state, self.invalidSeq())
-        elif mod_sam.Email().validateRFC(to) and self.state < 5:
+        elif helpers.Email().validateRFC(to) and self.state < 5:
 			if self.state == 3:
 			    self.state += 1.1
 			else: 
