@@ -31,13 +31,16 @@ class Info:
 class Mailer:
     def __init__(self, msgdata):
         self.msgdata = msgdata
-        #
+        self.sendMail()
         
     def log(self):
         timestamp = datetime.datetime.now()
         log = open('mail.log', 'a')
         log.write('\nMessage processed: {0}\n\n{1}\n'.format(timestamp, self.msgdata))
         log.close()
+        
+    def sendMail(self):
+        self.log()
 		     
 class SMTPCommand:        
     def __init__(self, state):
