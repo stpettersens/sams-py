@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/python
 """
 Simple Mail Transport Protocol (SMTP) server
 Copyright (c) 2010 Sam Saint-Pettersen
@@ -31,12 +31,14 @@ class Info:
 class Mailer:
     def __init__(self, msgdata):
         self.msgdata = msgdata
+        #
+        
     def log(self):
         timestamp = datetime.datetime.now()
         log = open('mail.log', 'a')
         log.write('\nMessage processed: {0}\n\n{1}\n'.format(timestamp, self.msgdata))
         log.close()
-        
+		     
 class SMTPCommand:        
     def __init__(self, state):
         self.state = state # Server state as relevant for executed command
@@ -47,32 +49,32 @@ class SMTPCommand:
         
     def helo(self, host=''):
         # Return the state and message (tuple array) for each SMTP command
-        if host == '' and self.state == 1:
-            r = (1, '501 HELO/EHLO requires a domain address\r\n')
+        if host == '' and self.state == 1.0:
+            r = (1.0, '501 HELO/EHLO requires a domain address\r\n')
         elif self.state != 1: r = (self.state, self.invalidSeq())
         else:
-            r = (2, '250 Hello, {0}. Have a message to send?\r\n'.format(host))
+            r = (2.0, '250 Hello, {0}. Have a message to send?\r\n'.format(host))
         return r
         
     def ehlo(self, host=''):
         return self.helo(host)
         
     def mailfrom(self, sender=''):
-        if sender == '' and self.state == 2:
-            r = (2, '501 MAIL FROM: requires a sender address\r\n')
+        if sender == '' and self.state == 2.0:
+            r = (2.0, '501 MAIL FROM: requires a sender address\r\n')
         elif self.state != 2: r = (self.state, self.invalidSeq())
         elif helpers.Email().validateRFC(sender) and self.state == 2:
-            r = (3, '250 {0}... Sender OK\r\n'.format(sender))
+            r = (3.0, '250 {0}... Sender OK\r\n'.format(sender))
         else:
-            r = (2, '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(sender))
+            r = (2.0, '553 {0} does not conform to RFC 2812 syntax.\r\n'.format(sender))
         return r
         
     def rcptto(self, to=''):
         if to == '' and self.state < 5.0:
             r = (self.state, '501 RCPT TO: requires a recipient address\r\n')
-        elif self.state < 3 or self.state > 5: r = (self.state, self.invalidSeq())
+        elif self.state < 3.0 or self.state > 5.0: r = (self.state, self.invalidSeq())
         elif helpers.Email().validateRFC(to) and self.state < 5:
-			if self.state == 3:
+			if self.state == 3.0:
 			    self.state += 1.1
 			else: 
 			    self.state += 0.1
@@ -82,14 +84,12 @@ class SMTPCommand:
         return r
         
     def data(self, data=''):
-        if data == '' and self.state < 5:
-            r = (5, '354 Ready for message data; terminate with \'.\'\r\n')
-        elif self.state < 4 or self.state > 5: r = (self.state, self.invalidSeq())
+        if data == '' and self.state < 5.0:
+            r = (5.0, '354 Ready for message data; terminate with \'.\'\r\n')
+        elif self.state < 4 or self.state > 5.0: r = (self.state, self.invalidSeq())
         else:
             self.msgdata += data
-            r = (6, '250 Message body OK\r\n')
-            
-        Mailer(self.msgdata).log();
+            r = (6.0, '250 Message body OK\r\n')
         return r
         
     def help(self):
@@ -106,7 +106,7 @@ class SMTPCommand:
         
 class ClientThread(threading.Thread):
     def __init__(self):
-        self.state = 0
+        self.state = 0.0
         threading.Thread.__init__(self)
         
     def run(self):
@@ -121,7 +121,7 @@ class ClientThread(threading.Thread):
                 gclients += 1 # After connect, number of clients is one more
                 client[0].send('220 {0} {1}\r\n'.format(Info().Greeting, datetime.datetime.now()))
                 print('^ Client {0} connected. ({1}/{2}).'.format(client[1][0], gclients, Info().MAX_CONNECTIONS))
-                self.state = 1 # Shift to ready state (1)
+                self.state = 1.0 # Shift to ready state (1.0)
             while True and self.state >= 1:
                 chunk = client[0].recv(1024)
                 command += chunk
@@ -134,6 +134,9 @@ class ClientThread(threading.Thread):
 					    print('\n<<< {0}'.format(command))
 					    print('\n>>> {0}'.format(returned))
 					command = ''
+					# After DATA finishes, send message
+					if self.state == 6.0:
+						Mailer(returned)
                 if not chunk or returned == Info().ExitMsg: break
             client[0].close()
             gclients -= 1 # After disconnect, number of connected clients is one less
