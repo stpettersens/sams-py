@@ -1,7 +1,6 @@
 #!/usr/bin/python
 """
 Automaton 
-
 Scriptable host interaction tool
 Copyright (c) 2010 Sam Saint-Pettersen
 
@@ -12,7 +11,7 @@ import os
 import getopt
 import socket
 import signal
-import theading
+import threading
 import datetime
 import re
 import Queue
@@ -31,17 +30,13 @@ class Automaton:
 		try:
 			opts, args = getopt.getopt(sys.argv[1:],'h:p:s:q:t:vid')
 			for o, a in opts:
-				if o == '-v':
-					self.displayInfo()
-				#elif o == '-h':
-				#	self.host = str(a)
+				if o == '-h':
+				    pass
 				elif o == '-p':
 				    self.port = int(a)
-                elif o == '-i':
-                	self.displayCmdLineOps()
                 # ... debugging ... 
 					
-		except getopt.GetOptError, err:
+		except getopt.GetoptError, err:
 			print('\nError: {0}'.format(err))
 			self.diplayUsage(True)
 			
@@ -52,10 +47,12 @@ class Automaton:
 	def displayUsage(self, exit):
 		print(__doc__)
 		print('Use switch -i for usage information.')
+		if exit: sys.exit(2)
 		
 	def displayCmdLineOps(self):
 		print(__doc__)
 		print('Usage: {0} [-i][-v][-h <hostname> -p <port number> -s <script, ....>'
 		+ '-q <# scripts> -t <# threads >]\n'.format(sys.argv[0]))
-		print()
-		if exit: sys.exit(2)
+		
+
+if __name__ == '__main__': Automaton()
