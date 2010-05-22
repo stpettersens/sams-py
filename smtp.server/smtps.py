@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """
 Simple Mail Transport Protocol (SMTP) server
+
 Copyright (c) 2010 Sam Saint-Pettersen
 
 Released under the MIT License
