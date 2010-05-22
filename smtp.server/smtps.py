@@ -193,18 +193,18 @@ class ServerThread(threading.Thread):
 
 class SMTPServer:
     def __init__(self):
-        self.termsig = False
-        self.port = 25 # Port number to default to
+        self.port = 25 # Port number to default to (SMTP standard: 25)
+        self.termSig = False
                 
         # Handle command line options
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'p:vhd')
+            opts, args = getopt.getopt(sys.argv[1:], 'p:vid')
             for o, a in opts:
                 if o == '-v':
                     self.displayInfo()
                 elif o == '-p':
                     self.port = int(a)
-                elif o == '-h':
+                elif o == '-i':
                     self.displayCmdLineOps()
                 elif o == '-d':
                     global gdebug
@@ -215,26 +215,26 @@ class SMTPServer:
             self.displayUsage(True)
             
         except ValueError:
-            print('\nError: Port must be a positive integer value, not \'{0}\'.'.format(a))
+            print('\nError: Port must be an unsigned integer value, not \'{0}\'.'.format(a))
             self.displayUsage(True)
                                
         self.displayUsage(False)
         print('\nHold Ctrl-C to terminate.')
         ServerThread(self.port).start()
-        while not self.termsig:
+        while not self.termSig:
             signal.signal(signal.SIGINT, self.quit)
-            if self.termsig: break
+            if self.termSig: break
         sys.exit(0)
         
     def displayUsage(self, exit):
         print(__doc__)
-        print('Use switch -h for usage information.')
+        print('Use switch -i for usage information.')
         if exit: sys.exit(2)
         
     def displayCmdLineOps(self):
         print(__doc__)
-        print('Usage: {0} [-h][-v][-d -p <port number>]\n'.format(sys.argv[0]))
-        print('-h: Display this information and exit.')
+        print('Usage: {0} [-i][-v][-d -p <port number>]\n'.format(sys.argv[0]))
+        print('-i: Display this information and exit.')
         print('-v: Display version information and exit.')
         print('-d: Display debug information while running.')
         print('-p: Listen on specified port number. (Default: 25)\n')
@@ -246,6 +246,6 @@ class SMTPServer:
         
     def quit(self, signum, frame):
         print('\nServer terminated.\n')
-        self.termsig = True
+        self.termSig = True
     
 if __name__ == '__main__': SMTPServer()
