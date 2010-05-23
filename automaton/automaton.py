@@ -1,10 +1,10 @@
 #!/usr/bin/python
 """
 Automaton 
-Scriptable host interaction tool
+Scriptable host interaction client
 Copyright (c) 2010 Sam Saint-Pettersen
 
-Released under the MIT License
+Released under the MIT License.
 """
 import sys
 import os
@@ -34,25 +34,33 @@ class Automaton:
 				    pass
 				elif o == '-p':
 				    self.port = int(a)
+				elif o == '-i':
+					self.displayCmdLineOps()
                 # ... debugging ... 
 					
 		except getopt.GetoptError, err:
-			print('\nError: {0}'.format(err))
-			self.diplayUsage(True)
+			print('\nError: {0}.'.format(err))
+			self.displayCmdLineOps()
 			
 		except ValueError:
-			print('\nError: Port must be an unsigned integer value, not \'{0}\''.format(a))
-			self.displayUsage(True)
+			print('\nError: Port must be an unsigned integer value, not \'{0}\'.'.format(a))
+			self.displayCmdLineOps()
 			
-	def displayUsage(self, exit):
-		print(__doc__)
-		print('Use switch -i for usage information.')
-		if exit: sys.exit(2)
 		
 	def displayCmdLineOps(self):
 		print(__doc__)
-		print('Usage: {0} [-i][-v][-h <hostname> -p <port number> -s <script, ....>'
-		+ '-q <# scripts> -t <# threads >]\n'.format(sys.argv[0]))
+		print('Usage: {0} [-i][-v][-b][-c]'.format(sys.argv[0]) 
+		+ '\n[-d -h <hostname> -p <port number> -s <script, ....> -t <# threads >]\n')
+		print('-i: Display this information and exit.')
+		print('-v: Display version information and exit.')	
+		print('-b: Display built-in commands.')
+		print('-c: Display defined commands and variables.')
+		print('-d: Display debug information while running.')
+		print('-h: Hostname to connect to. (\'localhost\' if omitted)')
+		print('-p: Listen on specified port number. (8282 if omitted)')
+		print('-s: Script(s) to run; *.ais file(s). (Mandatory arg)')
+		print('-t: Number of script threads to run concurrently on hosts. (<= 5)\n')
+		sys.exit(2)
 		
 
 if __name__ == '__main__': Automaton()
