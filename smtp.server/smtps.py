@@ -1,7 +1,6 @@
 #!/usr/bin/python
 """
 Simple Mail Transport Protocol (SMTP) server
-
 Copyright (c) 2010 Sam Saint-Pettersen
 
 Released under the MIT License
@@ -121,7 +120,7 @@ class ClientThread(threading.Thread):
         global gclients
         while True:
             client = gclientPool.get()
-            if client != None and self.state == 0 and gclients <= Info().MAX_CONNECTIONS:
+            if client != None and self.state == 0.0 and gclients <= Info().MAX_CONNECTIONS:
                 gclients += 1 # After connect, number of clients is one more
                 client[0].send('220 {0} {1}\r\n'.format(Info().Greeting, datetime.datetime.now()))
                 print('^ Client {0} connected. ({1}/{2}).'.format(client[1][0], gclients, Info().MAX_CONNECTIONS))
@@ -150,8 +149,8 @@ class ClientThread(threading.Thread):
         try:
             patt_noparams = re.compile('^[A-Z]{4}\r\n', re.I)
             patt_w1param = re.compile('^[A-Z]{4}\s*[\[\]A-Z0-9._]*\:*\s*[<>a-z0-9._@]*\r\n', re.I)
-            if self.state == 5:
-                r = SMTPCommand(5).data(command)
+            if self.state == 5.0:
+                r = SMTPCommand(5.0).data(command)
             elif re.match(patt_noparams, command):
                 command = command.strip('\r\n')
                 r = eval('SMTPCommand({0}).{1}()'.format(self.state, command.lower()))
