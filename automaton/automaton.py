@@ -34,7 +34,7 @@ class ConnectionThread(threading.Thread):
 	Connection thread to connect to target host
 	(One and only instance)
 	"""
-	def __init__(self, debug, host, port, script, max_conc):
+	def __init__(self, debug, host, port, script, Max_conc):
 		"""
 		Initialization method for connection thread
 		"""
@@ -42,7 +42,7 @@ class ConnectionThread(threading.Thread):
 		self.host = host
 		self.port = port
 		self.script = script
-		self.max_conc = max_conc
+		self.Max_conc = Max_conc
 		self.scriptPool = Queue.Queue(0)
 		threading.Thread.__init__(self)
 		
@@ -60,7 +60,7 @@ class ConnectionThread(threading.Thread):
 		for i, s in enumerate(self.script):
 			#... script execution thread
 			ScriptThread(s).start()
-			if i > max_conc: 
+			if i > Max_conc: 
 				# ... queue remaining scripts (that is, its index (i))
 	
 		
@@ -77,7 +77,7 @@ class Automaton:
 		self.Name = 'Automaton'
 		self.Vers = '1.0'
 		# 
-		self.max_conc = 5 # Maximum allowable concurrent scripts (5)
+		self.Max_conc = 5 # Maximum allowable concurrent scripts (5)
 		self.host = 'localhost' # Host to default to ('localhost'/127.0.0.1)
 		self.port = 8282 # Port number to default to (8282, no sudo)
 		self.script = [] # Default script is blank
@@ -114,7 +114,7 @@ class Automaton:
 		print(__doc__)
 		print('Hold Ctrl-C to terminate.')
 		ConnectionThread(self.debug, self.host, self.port, 
-		self.script, self.max_conc).start()
+		self.script, self.Max_conc).start()
 		while not self.termSig:
 			signal.signal(signal.SIGINT, self.quit)
 			if self.termSig: sys.exit(0)
