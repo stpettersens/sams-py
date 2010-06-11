@@ -26,8 +26,14 @@ class ScriptThread(threading.Thread):
 	"""
 	Script thread to execute a script on host machine
 	(May be more than one instance)
-	"""
-	pass
+	"""	
+	def run(self, script):
+		self.executeScript(script)
+		
+	def executeScript(self, script):
+		print('Executing \'{0}\''.format(script))
+		return 1
+		
 
 class ConnectionThread(threading.Thread):
 	"""
@@ -47,23 +53,25 @@ class ConnectionThread(threading.Thread):
 		threading.Thread.__init__(self)
 		
 	def run(self):
-		self.connect()
+		self.connectQueue()
 		
-	def connect(self):
+	def connectQueue(self):
 		"""
-		Connect to target host
+		Connect to target host, parse scripts to execution and queue
 		"""
 		print('\nConnecting to {0}:{1}...'.format(self.host, self.port))
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((self.host, self.port))
-		# ... Establish connection session dohickey
+		# Establish connection session 
 		for i, s in enumerate(self.script):
-			#... script execution thread
-			ScriptThread(s).start()
-			if i > Max_conc: 
-				# ... queue remaining scripts (that is, its index (i))
-	
-		
+			# Execute a script thread for each script, but
+			ScriptThread().start(s)
+			if i > Max_conc:
+				# ... queue scripts out of concurrent maximum
+				self.scriptPool.put(s)
+				
+			# When concurrent scripts have been executed, pool remaining
+				
 class Automaton:
 	"""
 	Automation instance class
