@@ -20,25 +20,38 @@ class AIS_Command:
 	pass
 	
 class AIS_Engine:
-	pass
+	def parseCommand(command):
+	    pass
 	
 class ScriptThread(threading.Thread):
 	"""
 	Script thread to execute a script on host machine
 	(May be more than one instance)
 	"""	
-	def run(self, script):
-		self.executeScript(script)
+	def __init__(self, conn, debug, script):
+	    """
+	    Initialization method for script thread
+	    """
+	    self.debug = debug 
+	    self.script = script
+	    self.conn = conn
+	    threading.Thread.__init__(self)
+	
+	def run(self):
+		self.executeScript()
 		
-	def executeScript(self, script):
-		print('Executing \'{0}\''.format(script))
-		return 1
+	def executeScript(self, engine=AIS_Engine()):
+		print('Executing \'{0}\'...\n'.format(self.script))
+	
+	    engine.parseCommand(
+	
+		self.conn.send('HELO localhost\r\n')
+		print('Done.')
 		
-
 class ConnectionThread(threading.Thread):
 	"""
 	Connection thread to connect to target host
-	(One and only instance)
+    (One and only instance)
 	"""
 	def __init__(self, debug, host, port, script, Max_conc):
 		"""
@@ -63,14 +76,16 @@ class ConnectionThread(threading.Thread):
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((self.host, self.port))
 		# Establish connection session 
-		for i, s in enumerate(self.script):
+		for i, script in enumerate(self.script):
 			# Execute a script thread for each script, but
-			ScriptThread().start(s)
-			if i > Max_conc:
+			ScriptThread(s, self.debug, script).start()
+			if i > self.Max_conc:
 				# ... queue scripts out of concurrent maximum
-				self.scriptPool.put(s)
+				self.scriptPool.put(script)
 				
 			# When concurrent scripts have been executed, pool remaining
+			
+		#s.close()
 				
 class Automaton:
 	"""
