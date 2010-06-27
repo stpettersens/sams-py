@@ -12,6 +12,7 @@ import getopt
 import socket
 import signal
 import threading
+import pickle
 import datetime
 import re
 import Queue
@@ -20,32 +21,37 @@ class AIS_Command:
 	pass
 	
 class AIS_Engine:
-	def parseCommand(command):
-	    pass
+    """
+    Script engine to execute commands in a script
+    ('engine': One and only instance, used by script threads)
+    """
+    def parse(self, command):
+        return 'a'
 	
 class ScriptThread(threading.Thread):
 	"""
 	Script thread to execute a script on host machine
 	(May be more than one instance)
 	"""	
-	def __init__(self, conn, debug, script):
+	def __init__(self, conn, engine, debug, script):
 	    """
 	    Initialization method for script thread
 	    """
 	    self.debug = debug 
 	    self.script = script
 	    self.conn = conn
+	    self.engine = engine
 	    threading.Thread.__init__(self)
 	
 	def run(self):
 		self.executeScript()
 		
-	def executeScript(self, engine=AIS_Engine()):
+	def executeScript(self):
 		print('Executing \'{0}\'...\n'.format(self.script))
-	
-	    engine.parseCommand(
-	
-		self.conn.send('HELO localhost\r\n')
+		
+		# Read file line-by-line, parse each command in file
+		self.engine.parse('pineapple')
+		
 		print('Done.')
 		
 class ConnectionThread(threading.Thread):
@@ -63,6 +69,7 @@ class ConnectionThread(threading.Thread):
 		self.script = script
 		self.Max_conc = Max_conc
 		self.scriptPool = Queue.Queue(0)
+		self.engine = AIS_Engine()
 		threading.Thread.__init__(self)
 		
 	def run(self):
@@ -78,7 +85,7 @@ class ConnectionThread(threading.Thread):
 		# Establish connection session 
 		for i, script in enumerate(self.script):
 			# Execute a script thread for each script, but
-			ScriptThread(s, self.debug, script).start()
+			ScriptThread(s, self.engine, self.debug, script).start()
 			if i > self.Max_conc:
 				# ... queue scripts out of concurrent maximum
 				self.scriptPool.put(script)
@@ -121,6 +128,8 @@ class Automaton:
 				# Switches without arguments
 				elif o == '-i':
 					self.displayCmdLineOps()
+				elif o == '-v':
+				    self.displayInfo()
                 #elif o == '-d':
                 	#self.debug = True
 		
@@ -158,10 +167,11 @@ class Automaton:
 		print('-p: Listen on specified port number. (8282 if omitted)')
 		print('-s: Script(s) to execute; *.ais file(s). (Mandatory arg)')
 		print('-q: Queue each script, rather than execute 5 at a time.\n')
-		sys.exit(1)
+		sys.exit(0)
 
 	def	displayInfo(self):
-		pass
+	    print('{0} {1} ({2}/{3})'.format(self.Name, self.Vers, sys.platform, os.name))
+	    sys.exit(0)
 		
 	def quit(self, signum, frame):
 		print('\nClient terminated.\n')
