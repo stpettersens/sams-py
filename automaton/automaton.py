@@ -12,7 +12,7 @@ import getopt
 import socket
 import signal
 import threading
-import pickle
+import cPickle
 import datetime
 import re
 import Queue
@@ -49,7 +49,7 @@ class ScriptThread(threading.Thread):
 	def executeScript(self):
 		print('Executing \'{0}\'...\n'.format(self.script))
 		
-		# Read file line-by-line, parse each command in file
+		# Read script file line-by-line, parse each command in file
 		self.engine.parse('pineapple')
 		
 		print('Done.')
