@@ -9,13 +9,14 @@ def doSomething():
 values = ({
 		'-h': 'localhost', #host 
 		'-p': 8282, #port
-		'-d': '!doSomething()' #doSomething()
+		'-d': 'doSomething()' #doSomething()
 		})
 		
 opts, args = getopt.getopt(sys.argv[1:],'h:p:d')
 for o, a in opts:
-    if a != '': values[o] = a
-    x = values.get(o)
-    
-if x.startswith('!'): eval(x.replace('!', ''))
-else: print(x)
+    if a != '': 
+        values[o] = a
+        x = values.get(o)
+        print(x)
+    else:
+        eval(values.get(o))
