@@ -33,15 +33,21 @@ class ScriptLoader:
 		"""
 		Initialization method for script thread
 		"""
-		self.debug = debug
 		self.conn = conn
+		self.debug = debug
 
 	def execute(self, script):
 		print('Executing \'{script}\'...\n'.format(script=script))
 
 		# Read script file line-by-line, parse each command in file
 		engine = AIS_Engine()
-		x = engine.parse('pineapple')
+		file = open(script, 'r')
+		for line in file:
+			# Ignore host and port number configuration if present
+			if line.startswith('!'): pass 
+			else:
+				print(line)
+				command = engine.parse(line)
 
 		print('Done.')
 
@@ -52,7 +58,7 @@ class Connection:
 	"""
 	def __init__(self, debug, host, port, script):
 		"""
-		Initialization method for connection thread
+		Initialization method for connection class
 		"""
 		self.debug = debug
 		self.host = host
@@ -109,7 +115,7 @@ class Automaton:
 		})
 
 		# Allow configuration file to overwrite defaults
-		self.config = self.loadConfig()
+		self.loadConfig()
 
 		# Add -s (script) option
 		self.config['-s'] = 'dummy.ais'
@@ -121,21 +127,32 @@ class Automaton:
 				if a != '': self.config[o] = a
 				else: eval('self.{method}'.format(method=methods[o]))
 
+			# Check script for !host:port specification string on first line
+			# and if so set
+			file = open(self.config['-s'], 'r')
+			self.setHostFromFile(file.readline())
+
 		# Handle invalid command line options
 		except getopt.GetoptError, err:
 			err = str(err)
 			err = err.capitalize()
-			print('\nError: {err}.'.format(err=err))
+			print('\nCLI Error: {err}.'.format(err=err))
 			self.displayCmdLineOps()
+
+		# Handle invalid script parameter
+		except IOError:
+			print('\nSCRIPT Error: \'{script}\' could not be loaded. Exists?'
+			.format(script=self.config['-s']))
+			sys.exit(1)
 
 		# Handle absence of command line options
 		if len(sys.argv) == 1:
-			print('\nError: No options or arguments provided.')
+			print('\nCLI Error: No options or arguments provided.')
 			self.displayCmdLineOps()
 
 		# Handle port not being an unsigned integer
 		if not str(self.config['-p']).isdigit() or int(self.config['-p']) < 0:
-			print('\nError: Port must be an unsigned integer, not \'{0}\'.'.format(a))
+			print('\nCLI Error: Port must be an unsigned integer, not \'{0}\'.'.format(a))
 			self.displayCmdLineOps()
 
 		print(__doc__)
@@ -170,15 +187,26 @@ class Automaton:
 		print('\nSecurity signature:\n\n{sig}'.format(sig=self.config['x']))
 		sys.exit(0)
 
+	def setHostFromFile(self, fl):
+		try:
+			if fl.startswith('!'):
+				self.confLine = True
+				fl = fl[1:].split(':')
+				self.config['-h'] = fl[0]
+				self.config['-p'] = int(fl[1])
+
+		except ValueError, err:
+				print('SCRIPT Error: {err}.'.format(err=err))
+				sys.exit(0)
+
 	def loadConfig(self):
 		try:
-			return json.load(open(self.ConfFile, 'r'))
+			self.config = json.load(open(self.ConfFile, 'r'))
 
 		except IOError:
 			# Write configuration when not found, such as first run
 			json.dump(self.config, open(self.ConfFile, 'w'))
-			print('\n(Re)wrote configuration file...')
-			print('If this is first run, ignore and run again.')
+			print('\nWrote configuration file...')
 			sys.exit(0)
 
 	def quit(self, signum, frame):
