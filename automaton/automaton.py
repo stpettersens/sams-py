@@ -136,23 +136,23 @@ class Automaton:
 		except getopt.GetoptError, err:
 			err = str(err)
 			err = err.capitalize()
-			print('\nCLI Error: {err}.'.format(err=err))
+			print('\nUsage Error: {err}.'.format(err=err))
 			self.displayCmdLineOps()
 
 		# Handle invalid script parameter
 		except IOError:
-			print('\nSCRIPT Error: \'{script}\' could not be loaded. Exists?'
+			print('\nI/O Error: \'{script}\' could not be loaded. Exists?'
 			.format(script=self.config['-s']))
 			sys.exit(1)
 
 		# Handle absence of command line options
 		if len(sys.argv) == 1:
-			print('\nCLI Error: No options or arguments provided.')
+			print('\nUsage Error: No options or arguments provided.')
 			self.displayCmdLineOps()
 
 		# Handle port not being an unsigned integer
-		if not str(self.config['-p']).isdigit() or int(self.config['-p']) < 0:
-			print('\nCLI Error: Port must be an unsigned integer, not \'{0}\'.'.format(a))
+		if not self.validatePort(self.config['-p']):
+			print('\nUsage Error: Port must be an unsigned integer, not \'{0}\'.'.format(self.config['-p']))
 			self.displayCmdLineOps()
 
 		print(__doc__)
@@ -188,17 +188,22 @@ class Automaton:
 		sys.exit(0)
 
 	def setHostFromFile(self, fl):
-		try:
-			if fl.startswith('!'):
-				self.confLine = True
-				fl = fl[1:].split(':')
-				self.config['-h'] = fl[0]
-				self.config['-p'] = int(fl[1])
+		if fl.startswith('!'):
+			fl = fl[1:].split(':')
+			self.config['-h'] = fl[0]
+			self.config['-p'] = int(fl[1])
 
-		except ValueError, err:
-				print('SCRIPT Error: {err}.'.format(err=err))
+			if not self.validatePort(fl[1]):
+				print('\nScript Error: Port \'{port}\' specified in script was not an unsigned integer.'
+				.format(port=fl[1].strip('\n')))
 				sys.exit(0)
 
+	def validatePort(self, port):
+		if not str(port).isdigit() or int(port) < 0:
+			return False
+		else:
+			return True
+			
 	def loadConfig(self):
 		try:
 			self.config = json.load(open(self.ConfFile, 'r'))
@@ -206,7 +211,7 @@ class Automaton:
 		except IOError:
 			# Write configuration when not found, such as first run
 			json.dump(self.config, open(self.ConfFile, 'w'))
-			print('\nWrote configuration file...')
+			print('\nFYI: Wrote configuration file...')
 			sys.exit(0)
 
 	def quit(self, signum, frame):
