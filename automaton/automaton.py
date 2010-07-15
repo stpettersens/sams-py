@@ -34,7 +34,9 @@ class AIS_Engine:
 
 	def parse(self, lineNo, line):
 		try:
-			instr = line.split(' ') # Split command and parameter at first space
+            # Could I do this neater with a regular expression?
+			line = line.replace(' ', '|', 1)
+			instr = line.split('|')
 			command = self.implemented[instr[0].upper()]
 			param = instr[1].strip('\n')
 			command = command.replace('$', param)
