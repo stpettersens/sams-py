@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 """
 Automaton
 Scriptable host interaction client
@@ -7,6 +7,7 @@ Copyright (c) 2010 Sam Saint-Pettersen
 Released under the MIT License.
 """
 import sys
+import io
 import os
 import getopt
 import socket
@@ -20,10 +21,25 @@ class AIS_Engine:
 	Script engine to execute commands in a script
 	"""
 	def __init__(self):
-		pass
+		self.builtins = {
+		'~':'~', # Tilde and hash is a comment, do nothing
+		'echo':'self.conn.send(\'$\')' # Send message ($) to host
+		}
 
-	def parse(self, command):
-		return 'a'
+	def parse(self, lineNo, line):
+		try:
+			instr = line.split('# ')
+			command = self.builtins[instr[0]]
+			param = instr[1].strip('\n')
+			command = command.replace('$', param)
+			return command
+
+		# When an invalid comamnd is encountered, throw exception
+		except KeyError:
+			print('Script Error: Invalid command.')
+			print('\t[Line {lineNo} {line}]'
+			.format(lineNo=lineNo, line=line.strip('\n')))
+			sys.exit(1)
 
 class ScriptLoader:
 	"""
@@ -36,20 +52,23 @@ class ScriptLoader:
 		self.conn = conn
 		self.debug = debug
 
-	def execute(self, script):
+	def execute(self, script, lineNo=1):
 		print('Executing \'{script}\'...\n'.format(script=script))
 
 		# Read script file line-by-line, parse each command in file
 		engine = AIS_Engine()
-		file = open(script, 'r')
+		file = io.open(script, 'r')
 		for line in file:
 			# Ignore host and port number configuration if present
-			if line.startswith('!'): pass 
+			if line.startswith('!'): pass
 			else:
-				print(line)
-				command = engine.parse(line)
+				command = engine.parse(lineNo, line)
+				if not command == '~': eval(command)
+			lineNo += 1
 
+		file.close()
 		print('Done.')
+		sys.exit(0)
 
 class Connection:
 	"""
@@ -81,7 +100,7 @@ class Connection:
 			s.close()
 
 		except socket.error:
-			print('Error: Could not connect to host.')
+			print('Connection Error: Could not connect to host.')
 			sys.exit(1)
 
 class Automaton:
@@ -105,20 +124,20 @@ class Automaton:
 		# -h hostname (Default: 'localhost')
 		# -p port num.(Default: 8282)
 		# -d use debug (Default: False)
-		self.config = ({
+		self.config = {
 		'x':'{signature}'.format(signature=uuid.uuid4()), 
 		'-h':'localhost', '-p':8282, '-d':False
-		})
+		}
 
-		methods = ({
+		methods = {
 		'-i':'displayCmdLineOps()', '-v':'displayInfo()'
-		})
+		}
 
 		# Allow configuration file to overwrite defaults
 		self.loadConfig()
 
 		# Add -s (script) option
-		self.config['-s'] = 'dummy.ais'
+		self.config['-s'] = '@'
 
 		# Handle command line options
 		try:
@@ -129,8 +148,9 @@ class Automaton:
 
 			# Check script for !host:port specification string on first line
 			# and if so set
-			file = open(self.config['-s'], 'r')
+			file = io.open(self.config['-s'], 'r')
 			self.setHostFromFile(file.readline())
+			file.close()
 
 		# Handle invalid command line options
 		except getopt.GetoptError, err:
@@ -141,9 +161,13 @@ class Automaton:
 
 		# Handle invalid script parameter
 		except IOError:
-			print('\nI/O Error: \'{script}\' could not be loaded. Exists?'
-			.format(script=self.config['-s']))
-			sys.exit(1)
+			if not self.config['-s'] == '@': 
+				print('\nI/O Error: Script \'{script}\' could not be loaded.'.format(script=self.config['-s']))
+				# Check script file exists
+				if not os.path.exists(self.config['-s']):
+					print('File does not exist.')
+				sys.exit(1)
+			else: pass
 
 		# Handle absence of command line options
 		if len(sys.argv) == 1:
@@ -167,8 +191,8 @@ class Automaton:
 		Display command line options
 		"""
 		print(__doc__)
-		print('Usage: {program} [-i|-h|-v|-b|-c]'.format(program=sys.argv[0])
-		+ '\n[-d -h <hostname> -p <port number>] -s <script>\n')
+		print('Usage: {program} [-i|-h|-v|-b|-c]'.format(program=sys.argv[0]))
+		print('[-d -h <hostname> -p <port number>] -s <script>\n')
 		print('-i: Display this information.')
 		print('-v: Display version information and signature.')
 		print('-b: Display built-in commands.')
@@ -178,7 +202,7 @@ class Automaton:
 		.format(host=self.config['-h']))
 		print('-p: Listen on specified port number. (Default: As script or {port})'
 		.format(port=self.config['-p']))
-		print('-s: Script to execute; *.ais file.')
+		print('-s: Script to execute; *.ais file.\n')
 		sys.exit(0)
 
 	def	displayInfo(self):
@@ -189,20 +213,23 @@ class Automaton:
 
 	def setHostFromFile(self, fl):
 		if fl.startswith('!'):
-			fl = fl[1:].split(':')
-			self.config['-h'] = fl[0]
-			self.config['-p'] = int(fl[1])
+			conf = fl[1:].split(':')
+			self.config['-h'] = conf[0]
+			self.config['-p'] = int(conf[1])
 
-			if not self.validatePort(fl[1]):
-				print('\nScript Error: Port \'{port}\' specified in script was not an unsigned integer.'
-				.format(port=fl[1].strip('\n')))
+			if not self.validatePort(conf[1]):
+				print self.validatePort(conf[1])
+				print('\nScript Error: Port specified in script was not an unsigned integer.')
+				print('\t[Line 1: {line1}]'.format(line1=fl.strip('\n')))
 				sys.exit(0)
 
 	def validatePort(self, port):
-		if not str(port).isdigit() or int(port) < 0:
-			return False
-		else:
+		port = str(port)
+		port = port.strip('\n')
+		if port.isdigit() or int(port) < 0:
 			return True
+		else:
+			return False
 			
 	def loadConfig(self):
 		try:
@@ -211,7 +238,7 @@ class Automaton:
 		except IOError:
 			# Write configuration when not found, such as first run
 			json.dump(self.config, open(self.ConfFile, 'w'))
-			print('\nFYI: Wrote configuration file...')
+			print('\nInfo: Wrote configuration file...')
 			sys.exit(0)
 
 	def quit(self, signum, frame):
