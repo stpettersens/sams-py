@@ -14,22 +14,28 @@ import socket
 import signal
 import json
 import uuid
-import re
+#import re
 
 class AIS_Engine:
 	"""
-	Script engine to execute commands in a script
+	Script engine to parse AIS commands in a script and 
+	return native Python code for execution in script sandbox
 	"""
 	def __init__(self):
-		self.builtins = {
-		'~':'~', # Tilde and hash is a comment, do nothing
-		'echo':'self.conn.send(\'$\')' # Send message ($) to host
-		}
+		self.implemented = [
+		('~','~'), # Tilde is a comment, do nothing
+		('ECHO','self.conn.send(\'$\')') # Send message ($) to host
+		]
+		
+		# Load defined commands/variables
+		# ...
+
+		self.implemented = dict(self.implemented) # Convert to dictionary
 
 	def parse(self, lineNo, line):
 		try:
-			instr = line.split('# ')
-			command = self.builtins[instr[0]]
+			instr = line.split(' ') # Split command and parameter at first space
+			command = self.implemented[instr[0].upper()]
 			param = instr[1].strip('\n')
 			command = command.replace('$', param)
 			return command
@@ -37,13 +43,14 @@ class AIS_Engine:
 		# When an invalid comamnd is encountered, throw exception
 		except KeyError:
 			print('Script Error: Invalid command.')
-			print('\t[Line {lineNo} {line}]'
+			print('\t[Line {lineNo}: {line}]'
 			.format(lineNo=lineNo, line=line.strip('\n')))
 			sys.exit(1)
 
-class ScriptLoader:
+class ScriptSandbox:
 	"""
-	Script loader to execute a script on host machine
+	Script sandbox to execute a script locally
+	to interact with connected host
 	"""
 	def __init__(self, conn, debug):
 		"""
@@ -63,11 +70,12 @@ class ScriptLoader:
 			if line.startswith('!'): pass
 			else:
 				command = engine.parse(lineNo, line)
-				if not command == '~': eval(command)
+				if not command == '~': 
+					eval(command)
 			lineNo += 1
 
 		file.close()
-		print('Done.')
+		print('Done with script; client terminated.')
 		sys.exit(0)
 
 class Connection:
@@ -94,8 +102,8 @@ class Connection:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.connect((self.host, self.port))
 	
-			scriptLoader = ScriptLoader(s, self.debug)
-			scriptLoader.execute(self.script)
+			sandbox = ScriptSandbox(s, self.debug)
+			sandbox.execute(self.script)
 
 			s.close()
 
@@ -116,7 +124,7 @@ class Automaton:
 		self.Name = 'Automaton'
 		self.Vers = '1.0'
 		#
-		self.ConfFile = 'automaton.conf.json'
+		self.ConfFile = 'conf.automaton.json'
 		self.termSig = False # Termination control variable
 
 		# Configuration to use:
@@ -137,7 +145,7 @@ class Automaton:
 		self.loadConfig()
 
 		# Add -s (script) option
-		self.config['-s'] = '@'
+		self.config['-s'] = '~'
 
 		# Handle command line options
 		try:
@@ -161,7 +169,7 @@ class Automaton:
 
 		# Handle invalid script parameter
 		except IOError:
-			if not self.config['-s'] == '@': 
+			if not self.config['-s'] == '~': 
 				print('\nI/O Error: Script \'{script}\' could not be loaded.'.format(script=self.config['-s']))
 				# Check script file exists
 				if not os.path.exists(self.config['-s']):
@@ -242,7 +250,7 @@ class Automaton:
 			sys.exit(0)
 
 	def quit(self, signum, frame):
-		print('\nClient terminated.\n')
+		print('\nClient terminated by user.\n')
 		self.termSig = True
 
 if __name__ == '__main__': Automaton()

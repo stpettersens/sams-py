@@ -1,3 +1,5 @@
 !localhost:2727
-~# This AIS script just sends a message to the listening host
-echo# blah
+~ This AIS script just sends a message to the listening host
+ECHO blah
+echo Commands are case insensitive, but
+ECHO please be consistent.
