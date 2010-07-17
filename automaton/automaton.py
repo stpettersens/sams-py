@@ -14,7 +14,7 @@ import socket
 import signal
 import json
 import uuid
-#import re
+import re
 
 class AIS_Engine:
 	"""
@@ -26,6 +26,7 @@ class AIS_Engine:
 		('~','~'), # Tilde is a comment, do nothing
 		('ECHO','self.conn.send(\'$\')') # Send message ($) to host
 		]
+		self.num_buitins = len(self.implemented)
 		
 		# Load defined commands/variables
 		# ...
@@ -34,13 +35,15 @@ class AIS_Engine:
 
 	def parse(self, lineNo, line):
 		try:
-            # Could I do this neater with a regular expression?
-			line = line.replace(' ', '|', 1)
-			instr = line.split('|')
+			# Split line at space between command and parameter
+			instr = re.split('\s', line, 1) 
+			# Look up internal command for AIS command
 			command = self.implemented[instr[0].upper()]
+			# Parameter will be used with the trailing newline char removed
 			param = instr[1].strip('\n')
-			command = command.replace('$', param)
-			return command
+
+			# Return iternal command and its parameter
+			return command.replace('$', param)
 
 		# When an invalid comamnd is encountered, throw exception
 		except KeyError:
@@ -164,8 +167,7 @@ class Automaton:
 
 		# Handle invalid command line options
 		except getopt.GetoptError, err:
-			err = str(err)
-			err = err.capitalize()
+			err = str(err).capitalize()
 			print('\nUsage Error: {err}.'.format(err=err))
 			self.displayCmdLineOps()
 
@@ -234,9 +236,8 @@ class Automaton:
 				sys.exit(0)
 
 	def validatePort(self, port):
-		port = str(port)
-		port = port.strip('\n')
-		if port.isdigit() or int(port) < 0:
+		port = str(port).strip('\n')
+		if port.isdigit() and int(port) > 0:
 			return True
 		else:
 			return False
