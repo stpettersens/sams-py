@@ -17,7 +17,7 @@ class EchoServer(threading.Thread):
     def run(self):
         print(__doc__)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(('', 2727))
+        s.bind(('', int(sys.argv[1])))
         s.listen(1)
         channel, details = s.accept()
         while True:
