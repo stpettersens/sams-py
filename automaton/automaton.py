@@ -23,15 +23,18 @@ class AIS_Engine:
 	"""
 	def __init__(self):
 		self.implemented = [
+		('','~'), # Blank line, treat as comment
 		('~','~'), # Tilde is a comment, do nothing
-		('ECHO','self.conn.send(\'$\')') # Send message ($) to host
+		('ECHO','self.conn.send(\'$\')'), # Send message ($) to host
+		('WAIT','if not re.match(\'$\'): pass'), # Wait for returned expression/literal string
+		('END', 'self.conn.close($)') # Terminate the connection to host
 		]
 		self.num_builtins = len(self.implemented) # Count buit-ins
 		
 		# Load defined commands/variables
 		# ...
 
-		self.commands = dict(self.implemented) # Load into usable dictionary
+		self.implemented = dict(self.implemented) # Convert to dictionary
 
 	def parse(self, lineNo, line):
 		try:
@@ -69,8 +72,8 @@ class ScriptSandbox:
 
 		# Read script file line-by-line, parse each command in file
 		engine = AIS_Engine()
-		file = io.open(script, 'r')
-		for line in file:
+		scriptFile = io.open(script, 'r')
+		for line in scriptFile:
 			# Ignore host and port number configuration if present
 			if line.startswith('!'): pass
 			else:
@@ -79,7 +82,7 @@ class ScriptSandbox:
 					eval(command)
 			lineNo += 1
 
-		file.close()
+		scriptFile.close()
 		print('Done with script; client terminated.')
 		sys.exit(0)
 
@@ -226,9 +229,9 @@ class Automaton:
 		sys.exit(0)
 
 	def setHostFromFile(self, script):
-		script = io.open(script, 'r')
-		fl = script.readline()
-		script.close()
+		scriptFile = io.open(script, 'r')
+		fl = scriptFile.readline()
+		scriptFile.close()
 		if fl.startswith('!') and self.paramsOnCLI == False:
 			conf = fl[1:].split(':')
 			self.config['-h'] = conf[0]
