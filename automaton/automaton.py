@@ -26,8 +26,8 @@ class AIS_Engine:
 		('','~'), # Blank line, treat as comment
 		('~','~'), # Tilde is a comment, do nothing
 		('ECHO','self.conn.send(\'$\')'), # Send message ($) to host
-		('WAIT','if not re.match(\'$\'): pass'), # Wait for returned expression/literal string
-		('END', 'self.conn.close($)') # Terminate the connection to host
+		('WAIT','self.conn.recv(1024)'), # Wait for return data from host
+		('END', 'self.conn.close()') # Terminate the connection to host
 		]
 		self.num_builtins = len(self.implemented) # Count buit-ins
 		
@@ -79,7 +79,8 @@ class ScriptSandbox:
 			else:
 				command = engine.parse(lineNo, line)
 				if not command == '~': 
-					eval(command)
+					data = eval(command)
+					print('Host responded:' + str(data)) # !
 			lineNo += 1
 
 		scriptFile.close()
