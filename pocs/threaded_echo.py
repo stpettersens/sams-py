@@ -23,6 +23,9 @@ class EchoServer(threading.Thread):
         while True:
             chunk = channel.recv(1024)
             print(chunk)
+            print channel
+            print details
+            channel.send('Thanks for your data!')
             break
         channel.close()
         quit()

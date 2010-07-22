@@ -1,0 +1,6 @@
+!localhost:25
+~ This AIS script interacts with a mail server
+WAIT
+ECHO HELO localhost\r\n
+WAIT
+END
