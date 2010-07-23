@@ -13,7 +13,6 @@ import getopt
 import socket
 import signal
 import json
-from encodings import hex_codec
 import uuid
 import re
 
