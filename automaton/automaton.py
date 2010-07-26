@@ -23,18 +23,20 @@ class AIS_Engine:
 	"""
 	def __init__(self):
 		#
-		self.DefineFile = 'def.automaton.json'
+		self.DefFile = 'def.automaton.json'
 		#
 		self.implemented = [
 		('','~'), # Blank line, treat as comment
 		('~','~'), # Tilde is a comment, do nothing
 		('ECHO','self.conn.send(\'$\')'), # Send message ($) to host
 		('WAIT','self.conn.recv(1024)'), # Wait for return data from host
-		('END', 'self.conn.close()') # Terminate the connection to host
+		('ENDIF','condition'), # Terminate connection to hoston a condition; Python code block TODO
+		('END', 'self.conn.close()') # Terminate the connection to host absoulutely, 
+		# should occur at end of scripts
 		]
-		self.num_builtins = len(self.implemented) # Count built-ins
+		self.num_builtins = len(self.implemented) # Count built-ins before...
 		
-		# Load defined commands and variables
+		# ... importing of defined commands and variables
 		self.loadDefined()
 
 		self.implemented = dict(self.implemented) # Convert to dictionary
@@ -56,8 +58,8 @@ class AIS_Engine:
 
 		# When an invalid comamnd is encountered, throw exception
 		except KeyError:
-			print('Script Error: Invalid command.')
-			print('\t[Line {lineNo}: {line}]'
+			print('Script Error: Invalid command:')
+			print('\t\t[Line {lineNo}: {line}]'
 			.format(lineNo=lineNo, line=line.strip('\n')))
 			sys.exit(1)
 		
@@ -66,7 +68,7 @@ class AIS_Engine:
 		Load user defined commands and variables from file
 		"""
 		pass
-		#defined = json.load(io.open(self.DefineFile, 'r'))
+		#defined = json.load(io.open(self.DefFile, 'r'))
 		#for el in defined: self.implemented.add(el)
 		
 class ScriptSandbox:
@@ -95,7 +97,7 @@ class ScriptSandbox:
 				command = engine.parse(lineNo, line)
 				if not command == '~': 
 					data = eval(command)
-					if self.debug: print('Host responded: {resp}'.format(resp=data))
+					if self.debug: print('Raw data from host: {data}'.format(data=data))
 					del data
 			lineNo += 1
 
@@ -176,10 +178,10 @@ class Automaton:
 
 		# Handle command line options
 		try:
-			opts, args = getopt.getopt(sys.argv[1:],'ivbcwh:p:s:')
+			opts, args = getopt.getopt(sys.argv[1:],'ivbcwdh:p:s:')
 			for o, a in opts:
 				if a != '': self.config[o] = a
-				else: eval('self.{method}'.format(method=methods[o]))
+				elif o != '-d': eval('self.{method}'.format(method=methods[o]))
 				# Check if -h and/or -p have been specified on the command line;
 				# if so, give them precedence over the specifications in the script file
 				if o == '-h' or o == '-p': self.paramsOnCLI = True
