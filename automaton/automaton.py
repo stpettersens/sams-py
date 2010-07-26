@@ -22,6 +22,9 @@ class AIS_Engine:
 	return native Python code for execution in script sandbox
 	"""
 	def __init__(self):
+		#
+		self.DefineFile = 'def.automaton.json'
+		#
 		self.implemented = [
 		('','~'), # Blank line, treat as comment
 		('~','~'), # Tilde is a comment, do nothing
@@ -29,12 +32,15 @@ class AIS_Engine:
 		('WAIT','self.conn.recv(1024)'), # Wait for return data from host
 		('END', 'self.conn.close()') # Terminate the connection to host
 		]
-		self.num_builtins = len(self.implemented) # Count buit-ins
+		self.num_builtins = len(self.implemented) # Count built-ins
 		
-		# Load defined commands/variables
-		# ...
+		# Load defined commands and variables
+		self.loadDefined()
 
 		self.implemented = dict(self.implemented) # Convert to dictionary
+		
+	def define(self, lineNo, line):
+		pass
 
 	def parse(self, lineNo, line):
 		try:
@@ -54,7 +60,15 @@ class AIS_Engine:
 			print('\t[Line {lineNo}: {line}]'
 			.format(lineNo=lineNo, line=line.strip('\n')))
 			sys.exit(1)
-
+		
+	def loadDefined(self):
+		"""
+		Load user defined commands and variables from file
+		"""
+		pass
+		#defined = json.load(io.open(self.DefineFile, 'r'))
+		#for el in defined: self.implemented.add(el)
+		
 class ScriptSandbox:
 	"""
 	Script sandbox to execute a script locally
@@ -77,10 +91,12 @@ class ScriptSandbox:
 			# Ignore host and port number configuration if present
 			if line.startswith('!'): pass
 			else:
+				define = engine.define(lineNo, line)
 				command = engine.parse(lineNo, line)
 				if not command == '~': 
 					data = eval(command)
-					print('Host responded:' + str(data)) # !
+					if self.debug: print('Host responded: {resp}'.format(resp=data))
+					del data
 			lineNo += 1
 
 		scriptFile.close()
@@ -148,7 +164,8 @@ class Automaton:
 		}
 
 		methods = {
-		'-i':'displayCmdLineOps()', '-v':'displayInfo()'
+		'-i':'displayCmdLineOps()', '-v':'displayInfo()',
+		'-w':'writeConfig()'
 		}
 
 		# Allow configuration file to overwrite defaults
@@ -159,13 +176,15 @@ class Automaton:
 
 		# Handle command line options
 		try:
-			opts, args = getopt.getopt(sys.argv[1:],'ivbch:p:s:')
+			opts, args = getopt.getopt(sys.argv[1:],'ivbcwh:p:s:')
 			for o, a in opts:
 				if a != '': self.config[o] = a
 				else: eval('self.{method}'.format(method=methods[o]))
 				# Check if -h and/or -p have been specified on the command line;
 				# if so, give them precedence over the specifications in the script file
 				if o == '-h' or o == '-p': self.paramsOnCLI = True
+				# Check if -d option is specified and/or set to True, then apply debugging output
+				if o == '-d' or self.config['-d']: self.config['-d'] = True
 				
 			# Check script for !host:port specification string on first line in script file
 			# and if so set as file when -h and/or -p have not been specified on the command line
@@ -209,12 +228,13 @@ class Automaton:
 		Display command line options
 		"""
 		print(__doc__)
-		print('Usage: {program} [-i|-h|-v|-b|-c]'.format(program=sys.argv[0]))
+		print('Usage: {program} [-i|-v|-b|-c|-w]'.format(program=sys.argv[0]))
 		print('[-d -h <hostname> -p <port number>] -s <script>\n')
 		print('-i: Display this information.')
 		print('-v: Display version information and signature.')
 		print('-b: Display built-in commands.')
 		print('-c: Display defined commands and variables.')
+		print('-w: (Re)write current configuration to file.')
 		print('-d: Display debug information while running.')
 		print('-h: Hostname to connect to. (Default: As script or {host})'
 		.format(host=self.config['-h']))
@@ -256,10 +276,12 @@ class Automaton:
 			self.config = json.load(open(self.ConfFile, 'r'))
 
 		except IOError:
-			# Write configuration when not found, such as first run
-			json.dump(self.config, open(self.ConfFile, 'w'))
-			print('\nInfo: Wrote configuration file...')
-			sys.exit(0)
+			# Write configuration file when not found
+			self.writeConfig()
+			
+	def writeConfig(self):
+		json.dump(self.config, open(self.ConfFile, 'w'))
+		print('\nInfo: Wrote configuration file...')
 
 	def quit(self, signum, frame):
 		print('\nClient terminated by user.\n')

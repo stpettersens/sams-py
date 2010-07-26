@@ -30,4 +30,3 @@ install: $(TARGET)
 
 clean:
 	rm -f -r temp
-
