@@ -184,9 +184,9 @@ class Automaton:
 				elif o != '-d': eval('self.{method}'.format(method=methods[o]))
 				# Check if -h and/or -p have been specified on the command line;
 				# if so, give them precedence over the specifications in the script file
-				if o == '-h' or o == '-p': self.paramsOnCLI = True
+				elif o == '-h' or o == '-p': self.paramsOnCLI = True
 				# Check if -d option is specified and/or set to True, then apply debugging output
-				if o == '-d' or self.config['-d']: self.config['-d'] = True
+				elif o == '-d' or self.config['-d']: self.config['-d'] = True
 				
 			# Check script for !host:port specification string on first line in script file
 			# and if so set as file when -h and/or -p have not been specified on the command line
