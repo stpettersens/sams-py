@@ -6,26 +6,35 @@
  * 
 */
 package gauldi
-import java.util.{HashMap => JHashMap}
-import org.json.simple.JSONValue
+import org.json.simple.{JSONValue,JSONObject,JSONArray}
 
 class GauldiBuildParser(buildConf: String) {
 	
-	// Return raw configuration, for debugging purposes only
-	def getRaw(): String = {
+	// Return raw build configuration in string,
+	// for debugging pu\rposes only
+	def getBuildString(): String = {
 		buildConf
 	}
-	def getPreamble(): JHashMap[String,String] = {
-		parseBuildJSON(0)
+	def getPreamble(): JSONObject = {
+		parseBuildJSON()
+		// Put into new JSONObject...
 	}
-	def getBuildSteps(): JHashMap[String,String] = {
-		parseBuildJSON(1)
+	def getBuildSteps(): JSONArray = {
+		//parseBuildJSON()
+		// Sort into JSONArray...
+		new JSONArray()
 	}
-	def getCleanSteps(): JHashMap[String,String] = {
-		parseBuildJSON(2)
+	def getInstallSteps(): JSONArray = {
+		new JSONArray()
 	}
-	private def parseBuildJSON(section: Int): JHashMap[String,String] = {
-		val keyPairs = new JHashMap[String,String]
-		keyPairs
+	def getCleanSteps(): JSONArray = {
+		parseBuildJSON()
+		// Sort into JSONArray...
+		new JSONArray()
+	}
+	private def parseBuildJSON(): JSONObject = { 
+		val parsedJson: Object = JSONValue.parse(buildConf)
+		val jsonObj: JSONObject = parsedJson.asInstanceOf[JSONObject]
+		jsonObj
 	}
 }

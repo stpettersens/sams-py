@@ -1,14 +1,21 @@
 {
 	"preamble": {
-		{ "source": "helloworld.cpp" },
-		{ "target": "helloworld" },
-		{ "tool": "gcc" }
+
+		"source": "helloworld.cpp",
+		"target": "helloworld",
+		"tool": "gcc"
 	}
-	"build": {
+
+	"build": [
+
 		{ "exec": "$tool $source -o $target" },
 		{ "mkdir": "bin" },
 		{ "copy": "$target->bin" }
-	}
-	"clean": {
-		{ "delete": "*.c" }
+	]
+
+	"clean": [
+
+		{ "delete": "*.c" } 
+	]
 }
+

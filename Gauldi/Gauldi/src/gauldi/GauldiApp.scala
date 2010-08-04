@@ -1,6 +1,5 @@
 /*
  * Gauldi platform agnostic build tool
-
  * Copyright (c) 2010 Sam Saint-Pettersen
  * 
  * Released under the MIT License.
@@ -9,9 +8,10 @@
 package gauldi
 import scala.io.Source
 import java.io.IOException
-import java.util.{HashMap => JHashMap}
+import org.json.simple.{JSONObject,JSONArray}
 
 object GauldiApp {
+  // Default build file
   val buildFile: String = "C:\\build.json" 
   def main(args: Array[String]): Unit = {
 	  // Default behavior is to load project's build file
@@ -34,8 +34,11 @@ object GauldiApp {
 	  }
 	  finally { // Parse configuration via GauldiBuildParser class
 	 	  val buildParser = new GauldiBuildParser(buildConf)
-	 	  println(buildParser.getRaw()) // DEBUG!
-
+	 	  println(buildParser.getBuildString()) // DEBUG!
+	 	  println(buildParser.getPreamble())
+	 	  println(buildParser.getBuildSteps())
+	 	  println(buildParser.getInstallSteps())
+	 	  println(buildParser.getCleanSteps())
 	  }
   }
   def generateNativeFile(): Unit = {
