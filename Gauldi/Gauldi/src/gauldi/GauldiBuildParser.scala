@@ -11,30 +11,43 @@ import org.json.simple.{JSONValue,JSONObject,JSONArray}
 class GauldiBuildParser(buildConf: String) {
 	
 	// Return raw build configuration in string,
-	// for debugging pu\rposes only
+	// for debugging purposes only
 	def getBuildString(): String = {
 		buildConf
 	}
 	def getPreamble(): JSONObject = {
-		parseBuildJSON()
-		// Put into new JSONObject...
-	}
+		val buildInfo = parseBuildJSON()
+		val preambleStr = JSONValue.toJSONString(buildInfo.get("preamble"))
+		val preambleObj = JSONValue.parse(preambleStr)
+		val preambleJson = preambleObj.asInstanceOf[JSONObject]
+		preambleJson
+	}	
 	def getBuildSteps(): JSONArray = {
-		//parseBuildJSON()
-		// Sort into JSONArray...
-		new JSONArray()
+		val buildInfo = parseBuildJSON()
+		val bStepsStr = JSONValue.toJSONString(buildInfo.get("build"))
+		val bStepsObj = JSONValue.parse(bStepsStr)
+		val bStepsJson = bStepsObj.asInstanceOf[JSONArray]
+		bStepsJson
 	}
 	def getInstallSteps(): JSONArray = {
-		new JSONArray()
+		val buildInfo = parseBuildJSON()
+		val iStepsStr = JSONValue.toJSONString(buildInfo.get("install"))
+		val iStepsObj = JSONValue.parse(iStepsStr)
+		val iStepsJson = iStepsObj.asInstanceOf[JSONArray]
+		iStepsJson
 	}
 	def getCleanSteps(): JSONArray = {
 		parseBuildJSON()
-		// Sort into JSONArray...
-		new JSONArray()
+		val buildInfo = parseBuildJSON()
+		val cStepsStr = JSONValue.toJSONString(buildInfo.get("clean"))
+		val cStepsObj = JSONValue.parse(cStepsStr)
+		val cStepsJson = cStepsObj.asInstanceOf[JSONArray]
+		cStepsJson
 	}
 	private def parseBuildJSON(): JSONObject = { 
-		val parsedJson: Object = JSONValue.parse(buildConf)
-		val jsonObj: JSONObject = parsedJson.asInstanceOf[JSONObject]
-		jsonObj
+		val buildObj: Object = JSONValue.parse(buildConf)
+		val buildJson = buildObj.asInstanceOf[JSONObject]
+		buildJson
 	}
+	
 }

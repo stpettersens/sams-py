@@ -12,10 +12,14 @@
 		{ "mkdir": "bin" },
 		{ "copy": "$target->bin" }
 	]
-
+	
+	"install": [
+		
+		{ "copy": "$target->$installDir" }
+	]
+	
 	"clean": [
 
 		{ "delete": "*.c" } 
 	]
 }
-
