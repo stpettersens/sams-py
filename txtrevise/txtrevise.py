@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Txtrevise
 Command line text editing tool
